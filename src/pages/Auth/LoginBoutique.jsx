@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../../components/Input";
-import { ArrowLeft, Store, AlertCircle } from "lucide-react";
+import { ArrowLeft, Store, AlertCircle, HandHeart } from "lucide-react";
 import { useState } from "react";
 import useAuthStore from "../../stores/auth.store";
 import ContainerForms from "./components/ContainerForms";
@@ -29,9 +29,7 @@ const LoginBoutique = () => {
 
             navigate("/dashboard-boutique");
         } catch (error) {
-            // L'erreur est déjà gérée par l'intercepteur Axios
             console.error("Erreur lors de la connexion :", error);
-            // Pas besoin d'afficher un toast ici car l'intercepteur le fait déjà
         }
     };
 
@@ -41,27 +39,37 @@ const LoginBoutique = () => {
             <div className="w-full flex items-center justify-between py-4 px-1">
                 <Link
                     to="/"
-                    className="rounded-full p-1 flex items-center justify-center transition-colors bg-neutral-500 hover:bg-neutral-800"
+                    className="rounded-full p-2 flex items-center justify-center transition-all duration-300 bg-emerald-100 hover:bg-emerald-200 border border-emerald-200 hover:border-emerald-300 group"
                 >
-                    <ArrowLeft className="h-6 w-6 text-white" />
+                    <ArrowLeft className="h-5 w-5 text-emerald-700 group-hover:text-emerald-800" />
                 </Link>
-                <h2 className="text-xl sm:text-3xl font-bold text-gray-900 text-center">
-                    Connexion Boutique
-                </h2>
-                <Store className="h-7 w-7 text-pink-400" />
+                <div className="text-center">
+                    <h2 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-700 to-green-600 bg-clip-text text-transparent">
+                        Connexion Boutique
+                    </h2>
+                    <div className="flex items-center justify-center mt-1 space-x-1">
+                        <HandHeart className="h-3 w-3 text-emerald-500" />
+                        <span className="text-xs text-emerald-600 font-medium">Ebamage</span>
+                    </div>
+                </div>
+                <div className="bg-gradient-to-br from-emerald-400 to-green-500 p-2 rounded-xl shadow-lg">
+                    <Store className="h-6 w-6 text-white" />
+                </div>
             </div>
 
             {/* SOUS-TITRE */}
-            <p className="text-sm text-gray-600 text-center mb-6 px-4 sm:px-8">
-                Reprenons là où vous vous êtes arrêté avec TDL.
-            </p>
+            <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-100 rounded-lg p-4 mb-6">
+                <p className="text-sm text-emerald-700/80 text-center leading-relaxed">
+                    Reprenez le contrôle de votre boutique avec une gestion simplifiée et écologique
+                </p>
+            </div>
 
             {/* FORMULAIRE */}
             <form onSubmit={handleSubmit} className="mt-8 space-y-6">
                 {/* Email */}
                 <div>
-                    <label htmlFor="email_btq" className="block text-sm font-medium text-gray-700 mb-1">
-                        Email <span className="text-red-500">*</span>
+                    <label htmlFor="email_btq" className="block text-sm font-semibold text-emerald-800 mb-2">
+                        Email <span className="text-emerald-500">*</span>
                     </label>
                     <Input
                         type="email"
@@ -70,14 +78,16 @@ const LoginBoutique = () => {
                         value={formData.email_btq}
                         onChange={handleChange}
                         placeholder="contact@ma-boutique.com"
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 ${
-                            error?.email_btq ? "border-red-500" : "border-gray-300"
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-3 focus:ring-emerald-200 transition-all duration-300 ${
+                            error?.email_btq 
+                                ? "border-red-300 bg-red-50" 
+                                : "border-emerald-200 focus:border-emerald-400"
                         }`}
                         required
                     />
                     {error?.email_btq && (
-                        <p className="mt-1 text-sm text-red-600 flex items-center">
-                            <AlertCircle className="w-4 h-4 mr-1" />
+                        <p className="mt-2 text-sm text-red-600 flex items-center bg-red-50 px-3 py-2 rounded-lg">
+                            <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
                             {error.email_btq}
                         </p>
                     )}
@@ -85,8 +95,8 @@ const LoginBoutique = () => {
 
                 {/* Password */}
                 <div>
-                    <label htmlFor="password_btq" className="block text-sm font-medium text-gray-700 mb-1">
-                        Mot de passe <span className="text-red-500">*</span>
+                    <label htmlFor="password_btq" className="block text-sm font-semibold text-emerald-800 mb-2">
+                        Mot de passe <span className="text-emerald-500">*</span>
                     </label>
                     <Input
                         type="password"
@@ -95,14 +105,16 @@ const LoginBoutique = () => {
                         value={formData.password_btq}
                         onChange={handleChange}
                         placeholder="••••••••"
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 ${
-                            error?.password_btq ? "border-red-500" : "border-gray-300"
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-3 focus:ring-emerald-200 transition-all duration-300 ${
+                            error?.password_btq 
+                                ? "border-red-300 bg-red-50" 
+                                : "border-emerald-200 focus:border-emerald-400"
                         }`}
                         required
                     />
                     {error?.password_btq && (
-                        <p className="mt-1 text-sm text-red-600 flex items-center">
-                            <AlertCircle className="w-4 h-4 mr-1" />
+                        <p className="mt-2 text-sm text-red-600 flex items-center bg-red-50 px-3 py-2 rounded-lg">
+                            <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
                             {error.password_btq}
                         </p>
                     )}
@@ -112,7 +124,7 @@ const LoginBoutique = () => {
                 <div className="text-right">
                     <Link
                         to="/mot-de-passe-oublie"
-                        className="text-sm text-pink-500 hover:text-pink-800"
+                        className="text-sm font-medium text-emerald-600 hover:text-emerald-800 transition-colors duration-300 hover:underline"
                     >
                         Mot de passe oublié ?
                     </Link>
@@ -122,24 +134,33 @@ const LoginBoutique = () => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className={`w-full bg-pink-500 text-white py-2 px-4 rounded-lg hover:bg-pink-600 transition-all ${
-                        loading ? "opacity-50 cursor-not-allowed" : ""
+                    className={`w-full bg-gradient-to-r from-emerald-500 to-green-500 text-white py-3 px-4 rounded-xl font-semibold hover:from-emerald-600 hover:to-green-600 transition-all duration-300 shadow-lg hover:shadow-emerald-200/50 transform hover:-translate-y-0.5 ${
+                        loading ? "opacity-50 cursor-not-allowed hover:transform-none" : ""
                     }`}
                 >
-                    {loading ? "Connexion en cours..." : "Se connecter"}
+                    {loading ? (
+                        <div className="flex items-center justify-center">
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Connexion en cours...
+                        </div>
+                    ) : (
+                        "Se connecter à ma boutique"
+                    )}
                 </button>
             </form>
 
             {/* LIEN VERS INSCRIPTION */}
-            <p className="mt-6 text-center text-sm text-gray-600 px-4">
-                Vous n'avez pas encore de boutique ?{" "}
-                <Link
-                    to="/inscriptionBoutique"
-                    className="text-pink-500 hover:text-pink-700 font-medium"
-                >
-                    Inscrivez-vous
-                </Link>
-            </p>
+            <div className="mt-8 p-4 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                <p className="text-center text-sm text-emerald-700">
+                    Vous n'avez pas encore de boutique ?{" "}
+                    <Link
+                        to="/inscriptionBoutique"
+                        className="font-semibold text-emerald-600 hover:text-emerald-800 underline transition-colors duration-300"
+                    >
+                        Créer ma boutique Ebamage
+                    </Link>
+                </p>
+            </div>
         </ContainerForms>
     );
 };
