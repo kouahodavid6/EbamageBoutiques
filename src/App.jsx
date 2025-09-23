@@ -23,9 +23,9 @@ function App() {
         <Toaster
           position="top-right"
           containerStyle={{
-            zIndex: 99999, // Z-index plus élevé que les modals (10000)
-            filter: "none", // Empêche l'héritage des filtres
-            backdropFilter: "none" // Empêche l'effet de flou
+            zIndex: 99999,
+            filter: "none",
+            backdropFilter: "none"
           }}
           toastOptions={{
             duration: 4000,
@@ -36,7 +36,7 @@ function App() {
               padding: "12px 16px",
               fontWeight: "500",
               fontSize: "14px",
-              backdropFilter: "none", // Empêche l'effet de flou
+              backdropFilter: "none",
             },
             success: {
               icon: <CheckCircle className="text-[#166534] w-5 h-5" />,
@@ -44,7 +44,7 @@ function App() {
                 background: "#bbf7d0",
                 color: "#166534",
                 borderColor: "#4ade80",
-                backdropFilter: "none", // Empêche l'effet de flou
+                backdropFilter: "none",
               },
             },
             error: {
@@ -53,7 +53,7 @@ function App() {
                 background: "#fee2e2",
                 color: "#7f1d1d",
                 borderColor: "#fca5a5",
-                backdropFilter: "none", // Empêche l'effet de flou
+                backdropFilter: "none",
               },
             },
           }}
