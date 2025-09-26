@@ -6,8 +6,8 @@ import {
   BarChart3,
   ShoppingBag,
   ShoppingCart,
-  Calendar,
-  Settings,
+  // Calendar,
+  // Settings,
   LogOut,
   Layers,
 } from "lucide-react";
@@ -15,6 +15,7 @@ import useAuthStore from "../../../stores/auth.store";
 import { useNavigate } from "react-router-dom";
 import ConfirmLogoutModal from "../../../components/ConfirmLogoutModal";
 import { createPortal } from "react-dom";
+import { motion } from "framer-motion";
 
 const DashboardSidebar = () => {
   const location = useLocation();
@@ -25,18 +26,11 @@ const DashboardSidebar = () => {
 
   const handleConfirmLogout = async () => {
     try {
-      // 1. Supprimer le token
       localStorage.removeItem("token");
-
-      // 2. Réinitialiser Zustand
-      logout(); // appel à ton authStore pour nettoyer l'état si besoin
-
-      // 3. Rediriger vers la page de connexion
+      logout();
       navigate("/connexionBoutique");
       toast.success("Déconnexion effectuée avec succès !");
     } catch (error) {
-      // L'erreur est déjà gérée par l'intercepteur Axios si c'est une erreur de requête
-      // Mais comme la déconnexion est une opération locale, on garde un message d'erreur spécifique
       toast.error("Erreur lors de la déconnexion !");
       console.error("Erreur:", error);
     }
@@ -44,7 +38,6 @@ const DashboardSidebar = () => {
 
   const isActive = (path) => location.pathname === path;
 
-  // Définition des liens du menu selon le rôle
   const sidebarItems = [
     {
       path: "/dashboard-boutique",
@@ -66,28 +59,40 @@ const DashboardSidebar = () => {
       name: "Commandes",
       icon: <ShoppingCart className="h-5 w-5" />,
     },
-    // {
-    //     path: '/dashboard-boutique/live',
-    //     name: 'Programmer un live',
-    //     icon: <Calendar className="h-5 w-5" />
-    // },
-    // {
-    //   path: "/dashboard-boutique/parametre",
-    //   name: "Paramètres",
-    //   icon: <Settings className="h-5 w-5" />,
-    // },
   ];
+
+  const itemVariants = {
+    hover: {
+      x: 5,
+      transition: { duration: 0.2 }
+    }
+  };
+
+  const buttonVariants = {
+    hover: {
+      scale: 1.02,
+      transition: { duration: 0.2 }
+    },
+    tap: {
+      scale: 0.98,
+      transition: { duration: 0.1 }
+    }
+  };
 
   return (
     <>
-      <div className="h-screen w-64 bg-white text-gray-500 fixed left-0 top-0 z-30">
+      <div 
+        className="h-screen w-64 bg-gradient-to-b from-white to-emerald-50 text-emerald-700 fixed left-0 top-0 z-30 border-r border-emerald-100 shadow-lg"
+      >
         {/* Logo en haut du menu */}
-        <div className="px-6 py-4  border-opacity-20 shadow-lg">
+        <div className="px-6 py-4 border-b border-emerald-100">
           <Link
             to="/dashboard-boutique"
             className="flex items-center space-x-2">
-            <Store className="h-8 w-8 text-pink-400" />
-            <div className="font-bold text-xl text-gray-800">TrucDeLaTe</div>
+            <div>
+              <Store className="h-8 w-8 text-emerald-500" />
+            </div>
+            <div className="font-bold text-xl text-emerald-800">Ebamage</div>
           </Link>
         </div>
 
@@ -95,30 +100,56 @@ const DashboardSidebar = () => {
         <div className="py-4 px-6">
           <ul>
             {sidebarItems.map((item, index) => (
-              <li key={index}>
+              <motion.li 
+                key={index} 
+                className="mb-1"
+                variants={itemVariants}
+                custom={index}
+                whileHover="hover"
+              >
                 <Link
                   to={item.path}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ${
                     isActive(item.path)
-                      ? "bg-pink-50 text-pink-600 border-l-4 border-pink-500"
-                      : "text-gray-600 hover:bg-gray-50"
+                      ? "bg-emerald-50 text-emerald-600 border-l-4 border-emerald-500 shadow-sm"
+                      : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                   }`}>
-                  {item.icon}
-                  <span className="ml-3">{item.name}</span>
+                  <div>
+                    {item.icon}
+                  </div>
+                  <span className="ml-2 font-medium">{item.name}</span>
                 </Link>
-              </li>
+              </motion.li>
             ))}
 
             {/* Lien de déconnexion */}
-            <li className="mt-6">
-              <button
+            <motion.li 
+              className="mt-6"
+              variants={itemVariants}
+              custom={sidebarItems.length}
+              whileHover="hover"
+            >
+              <motion.button
                 onClick={() => setModalOpen(true)}
-                className="flex w-full items-center px-6 py-3 text-white bg-pink-500 hover:bg-pink-600 rounded-lg transition-colors">
+                className="flex w-full items-center px-6 py-3 text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 rounded-lg transition-all duration-300 shadow-md"
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+              >
                 <LogOut className="h-5 w-5" />
                 <span className="ml-3 font-bold">Déconnexion</span>
-              </button>
-            </li>
+              </motion.button>
+            </motion.li>
           </ul>
+        </div>
+
+        {/* Footer */}
+        <div className="absolute bottom-4 left-0 right-0 px-6">
+          <div className="text-center">
+            <p className="text-xs text-emerald-400">
+              Version 1.0 • Ebamage
+            </p>
+          </div>
         </div>
       </div>
 

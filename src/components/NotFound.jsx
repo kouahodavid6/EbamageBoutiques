@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Home, Leaf } from 'lucide-react';
+import { AlertTriangle, Home, Store, ShoppingCart, ShoppingBasket } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const NotFound = () => {
@@ -71,7 +71,6 @@ const NotFound = () => {
                     >
                         <Home className="h-5 w-5" />
                         Retour à l'accueil
-                        <Leaf className="h-4 w-4" />
                     </Link>
                 </motion.div>
 
@@ -82,17 +81,17 @@ const NotFound = () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.2 }}
                 >
-                    <Leaf className="h-4 w-4" />
+                    <Store className="h-4 w-4" />
                     Revenez vers notre écosystème durable
                 </motion.p>
             </motion.div>
 
             {/* Décorations bas de page */}
             <div className="absolute bottom-10 left-10 opacity-20">
-                <Leaf className="h-8 w-8 text-emerald-600" />
+                <ShoppingCart className="h-8 w-8 text-emerald-600" />
             </div>
             <div className="absolute bottom-20 right-10 opacity-20">
-                <Leaf className="h-6 w-6 text-green-600" />
+                <ShoppingBasket className="h-6 w-6 text-green-600" />
             </div>
         </div>
     );
