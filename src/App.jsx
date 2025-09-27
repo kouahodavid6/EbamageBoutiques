@@ -3,7 +3,7 @@ import { CheckCircle, XCircle } from "lucide-react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 
-import Home from './pages/HomePages/Home';
+import Home from './pages/Homepages/Home'
 import LoginBoutique from './pages/AuthPages/LoginBoutique';
 import RegisterBoutique from './pages/AuthPages/RegisterBoutique';
 
