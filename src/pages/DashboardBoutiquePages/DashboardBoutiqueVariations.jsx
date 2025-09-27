@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import DashboardSidebar from "../components/DashboardSidebar";
-import DashboardHeader from "../components/DashboardHeader";
+import DashboardSidebar from "../../components/DashboardSidebar";
+import DashboardHeader from "../../components/DashboardHeader";
 import {
   Plus,
   Trash2,
@@ -17,7 +17,7 @@ import {
   getVariationsShop,
   updateVariationShop,
   deleteVariationShop,
-} from "../../../services/variation.service";
+} from "../../services/variation.service";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";

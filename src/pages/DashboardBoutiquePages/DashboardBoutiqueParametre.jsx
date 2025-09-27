@@ -1,6 +1,6 @@
 import { useState } from "react";
-import DashboardSidebar from "../components/DashboardSidebar";
-import DashboardHeader from "../components/DashboardHeader";
+import DashboardSidebar from "../../components/DashboardSidebar";
+import DashboardHeader from "../../components/DashboardHeader";
 //import { Users, UserCircle, FileText } from 'lucide-react';
 
 const DashboardBoutiqueParametre = () => {

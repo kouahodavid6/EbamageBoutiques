@@ -1,10 +1,10 @@
 import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { Image, X, Plus, ChevronDown } from "lucide-react";
-import useProduitStore from "../../../../stores/produit.store";
-// import { produitService } from "../../../../services/produit.service";
-import useCategorieStore from "../../../../stores/categorie.store";
-import { getVariationsShop } from "../../../../services/variation.service";
+import useProduitStore from "../../../stores/produit.store";
+// import { produitService } from "../../../services/produit.service";
+import useCategorieStore from "../../../stores/categorie.store";
+import { getVariationsShop } from "../../../services/variation.service";
 
 const RegisterProduitsModal = ({
   //setShowAddModal,

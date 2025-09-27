@@ -11,9 +11,9 @@ import {
   LogOut,
   Layers,
 } from "lucide-react";
-import useAuthStore from "../../../stores/auth.store";
+import useAuthStore from '../stores/auth.store';
 import { useNavigate } from "react-router-dom";
-import ConfirmLogoutModal from "../../../components/ConfirmLogoutModal";
+import ConfirmLogoutModal from "./../components/ConfirmLogoutModal";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 

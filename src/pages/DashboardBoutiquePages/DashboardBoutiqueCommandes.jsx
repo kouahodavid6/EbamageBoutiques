@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import DashboardSidebar from "../components/DashboardSidebar";
-import DashboardHeader from "../components/DashboardHeader";
+import DashboardSidebar from "../../components/DashboardSidebar";
+import DashboardHeader from "../../components/DashboardHeader";
 import { ShoppingBag, Search, Clock, MapPin, User, Package, ArrowUpRight, Truck, CreditCard } from 'lucide-react';
-import useCommandeStore from "../../../stores/commande.store";
+import useCommandeStore from "../../stores/commande.store";
 import CommandeDetailsModal from "./components/CommandeDetailsModal";
 import { motion } from "framer-motion";
 

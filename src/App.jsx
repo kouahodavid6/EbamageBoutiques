@@ -3,15 +3,15 @@ import { CheckCircle, XCircle } from "lucide-react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 
-import Home from './pages/Home/Home';
-import LoginBoutique from './pages/Auth/LoginBoutique';
-import RegisterBoutique from './pages/Auth/RegisterBoutique';
+import Home from './pages/HomePages/Home';
+import LoginBoutique from './pages/AuthPages/LoginBoutique';
+import RegisterBoutique from './pages/AuthPages/RegisterBoutique';
 
-import DashboardBoutique from './pages/DashboardUtilisateurs/DashboardBoutique/DashboardBoutique';
-import DashboardBoutiqueProduits from './pages/DashboardUtilisateurs/DashboardBoutique/DashboardBoutiqueProduits';
-import DashboardBoutiqueCommandes from './pages/DashboardUtilisateurs/DashboardBoutique/DashboardBoutiqueCommandes';
-import DashboardBoutiqueParametre from './pages/DashboardUtilisateurs/DashboardBoutique/DashboardBoutiqueParametre';
-import DashboardBoutiqueVariations from './pages/DashboardUtilisateurs/DashboardBoutique/DashboardBoutiqueVariations';
+import DashboardBoutique from './pages/DashboardBoutiquePages/DashboardBoutique';
+import DashboardBoutiqueProduits from './pages/DashboardBoutiquePages/DashboardBoutiqueProduits';
+import DashboardBoutiqueCommandes from './pages/DashboardBoutiquePages/DashboardBoutiqueCommandes';
+import DashboardBoutiqueParametre from './pages/DashboardBoutiquePages/DashboardBoutiqueParametre';
+import DashboardBoutiqueVariations from './pages/DashboardBoutiquePages/DashboardBoutiqueVariations';
 
 import NotFound from './components/NotFound';
 

@@ -1,5 +1,5 @@
 import { Menu, Bell,Store } from 'lucide-react';
-import useAuthStore from '../../../stores/auth.store';
+import useAuthStore from '../stores/auth.store';
 import { motion } from 'framer-motion';
 
 const DashboardHeader = ({ title, toggleSidebar }) => {

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, ShoppingCart, TrendingUp, Package, Users, Store } from "lucide-react";
 
-import DashboardSidebar from "../components/DashboardSidebar";
-import DashboardHeader from "../components/DashboardHeader";
+import DashboardSidebar from "../../components/DashboardSidebar";
+import DashboardHeader from "../../components/DashboardHeader";
 import { motion } from "framer-motion";
 
 /* ------------------------------------------------------------- */
