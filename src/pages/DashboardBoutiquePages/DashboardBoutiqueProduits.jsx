@@ -1,15 +1,15 @@
 // ... [tout ton import inchangé] ...
 import toast from "react-hot-toast";
+import { Plus, Search, Image, ArrowUpRight, Package, Filter, Grid3X3 } from "lucide-react";
 import { useEffect, useState } from "react";
 import DashboardSidebar from "../../components/DashboardSidebar";
 import DashboardHeader from "../../components/DashboardHeader";
-import { Plus, Search, Image, ArrowUpRight, Package, Filter, Grid3X3 } from "lucide-react";
 import ProduitDetailsModal from "./components/ProduitDetailsModal";
 import RegisterProduitsModal from "./components/RegisterProduitsModal";
 import DeleteConfirmModal from "./components/DeleteConfirmModal";
+import CategoriesList from "../../components/CategoriesList";
 import useProduitStore from "../../stores/produit.store";
 import useCategorieStore from "../../stores/categorie.store";
-import CategoriesList from "../../components/CategoriesList";
 import { motion } from "framer-motion";
 
 const DashboardBoutiqueProduits = () => {

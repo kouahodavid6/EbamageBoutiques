@@ -99,7 +99,7 @@ const ConfirmLogoutModal = ({ isOpen, onClose, onConfirm }) => {
                         variants={modalVariants}
                     >
                         {/* En-tête avec bouton de fermeture */}
-                        <div className="flex justify-between items-center p-6 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-green-50/30">
+                        <div className="flex justify-between items-center p-6 border-b border-emerald-100 bg-gradient-to-r">
                             <div className="flex items-center gap-4">
                                 <motion.div
                                     className="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100"
@@ -127,8 +127,8 @@ const ConfirmLogoutModal = ({ isOpen, onClose, onConfirm }) => {
                         {/* Contenu */}
                         <motion.div 
                             className="p-6"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
                             transition={{ delay: 0.2, duration: 0.4 }}
                         >
                             <div className="flex items-start gap-4 mb-6">
