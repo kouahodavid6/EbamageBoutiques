@@ -84,7 +84,7 @@ const Home = () => {
                     >
                         <div className="bg-emerald-100 border border-emerald-200 rounded-full px-4 py-2 flex items-center space-x-2">
                             <Store className="w-4 h-4 text-emerald-600" />
-                            <span className="text-sm font-medium text-emerald-700">Solution e-commerce écologic</span>
+                            <span className="text-sm font-medium text-emerald-700">Solution e-commerce écologique</span>
                         </div>
                     </motion.div>
 
