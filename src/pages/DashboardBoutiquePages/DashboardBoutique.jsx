@@ -193,7 +193,7 @@ const DashboardBoutique = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.4, duration: 0.4 }}
                     >
-                        <div className="flex items-center justify-center space-x-3">
+                        <div className="flex flex-col sm:flex-row items-center justify-center space-x-3">
                             <Store className="w-6 h-6 text-emerald-500" />
                             <p className="text-gray-700/80 text-lg font-medium">
                                 <strong>Votre boutique avance bien</strong> : Continuez à développer votre activité en ligne !

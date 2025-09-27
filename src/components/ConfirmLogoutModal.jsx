@@ -149,11 +149,11 @@ const ConfirmLogoutModal = ({ isOpen, onClose, onConfirm }) => {
                                     </p>
                                 </div>
                             </div>
-                            
-                            <div className="flex justify-end gap-3">
+
+                            <div className="flex flex-col sm:flex-row justify-end gap-3">
                                 <motion.button
                                     onClick={onClose}
-                                    className="px-5 py-2.5 rounded-xl border border-emerald-300 text-emerald-700 hover:bg-emerald-50 transition-all duration-300 font-medium"
+                                    className="px-4 sm:px-5 py-3 sm:py-2.5 rounded-xl border border-emerald-300 text-emerald-700 hover:bg-emerald-50 transition-all duration-300 font-medium text-base sm:text-sm w-full sm:w-auto"
                                     variants={buttonVariants}
                                     whileHover="hover"
                                     whileTap="tap"
@@ -162,14 +162,14 @@ const ConfirmLogoutModal = ({ isOpen, onClose, onConfirm }) => {
                                 </motion.button>
                                 <motion.button
                                     onClick={handleConfirm}
-                                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 transition-all duration-300 font-medium shadow-lg hover:shadow-amber-200/50"
+                                    className="px-4 sm:px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 transition-all duration-300 font-medium shadow-lg hover:shadow-amber-200/50 text-base sm:text-sm w-full sm:w-auto"
                                     variants={buttonVariants}
                                     whileHover="hover"
                                     whileTap="tap"
                                 >
-                                    <div className="flex items-center gap-2">
-                                        <LogOut className="h-4 w-4" />
-                                        Se déconnecter
+                                    <div className="flex items-center justify-center gap-2">
+                                        <LogOut className="h-4 w-4 sm:h-3 sm:w-3" />
+                                        <span>Se déconnecter</span>
                                     </div>
                                 </motion.button>
                             </div>
