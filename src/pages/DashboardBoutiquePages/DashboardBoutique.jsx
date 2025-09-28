@@ -158,7 +158,7 @@ const DashboardBoutique = () => {
                                 </Link>
                             </motion.div>
 
-                            <motion.div whileHover={{ scale: 1 }} whileTap={{ scale: 0.6 }}>
+                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                 <Link 
                                     to="/dashboard-boutique/commandes"
                                     className="group flex items-center justify-between p-6 border-2 border-dashed border-emerald-200 rounded-xl hover:border-emerald-400 hover:bg-emerald-50/50 transition-all duration-300"

@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import useCategorieStore from '../stores/categorie.store';
+import { motion } from 'framer-motion';
+import { Folder, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 const CategoriesList = () => {
   const { categories, loading, error, fetchCategories } = useCategorieStore();
@@ -8,36 +10,194 @@ const CategoriesList = () => {
     fetchCategories();
   }, [fetchCategories]);
 
-  if (loading) return <div className="p-4">Chargement des catégories...</div>;
-  if (error) return <div className="p-4 text-red-500">Erreur: {error}</div>;
+  // Variants d'animation
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  if (loading) return (
+    <motion.div 
+      className="flex justify-center items-center py-12"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
+      <div className="text-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="mx-auto mb-4"
+        >
+          <Loader2 className="h-8 w-8 text-emerald-500" />
+        </motion.div>
+        <p className="text-emerald-600/80 font-medium">Chargement des catégories...</p>
+      </div>
+    </motion.div>
+  );
+
+  if (error) return (
+    <motion.div 
+      className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-2xl"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <p className="font-medium">Erreur lors du chargement des catégories</p>
+      <p className="text-sm mt-1">{error}</p>
+    </motion.div>
+  );
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Liste des catégories</h2>
+    <motion.div 
+      className="p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100/60"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-emerald-100 rounded-xl">
+          <Folder className="h-6 w-6 text-emerald-600" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-emerald-900">Catégories disponibles</h2>
+          <p className="text-emerald-600/70 text-sm">
+            {categories.length} catégorie{categories.length !== 1 ? 's' : ''} dans votre boutique
+          </p>
+        </div>
+      </div>
+
       {categories.length === 0 ? (
-        <p>Aucune catégorie disponible</p>
+        <motion.div 
+          className="text-center py-12"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Folder className="w-16 h-16 text-emerald-300 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-emerald-900 mb-2">Aucune catégorie disponible</h3>
+          <p className="text-emerald-600/70">
+            Commencez par créer vos premières catégories pour organiser vos produits
+          </p>
+        </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categories.map((categorie) => (
-            <div key={categorie.hashid} className="border rounded-lg p-4 shadow-sm">
-              <div className="flex items-center space-x-4">
-                {categorie.image_categorie && (
-                  <img 
-                    src={categorie.image_categorie.replace(/[\s`]/g, '')} 
-                    alt={categorie.nom_categorie} 
-                    className="w-16 h-16 object-cover rounded-md"
-                  />
-                )}
-                <div>
-                  <h3 className="font-semibold">{categorie.nom_categorie}</h3>
-                  <p className="text-xs text-gray-500">ID: {categorie.hashid}</p>
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {categories.map((categorie, index) => (
+            <motion.div 
+              key={categorie.hashid} 
+              className="border border-emerald-100 rounded-xl p-4 bg-white/50 hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md"
+              variants={itemVariants}
+              custom={index}
+              whileHover="hover"
+            >
+              <div className="flex items-center space-x-3">
+                <motion.div 
+                  className="flex-shrink-0"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {categorie.image_categorie ? (
+                    <img 
+                      src={categorie.image_categorie.replace(/[\s`]/g, '')} 
+                      alt={categorie.nom_categorie} 
+                      className="w-12 h-12 object-cover rounded-lg border border-emerald-200"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-emerald-100 rounded-lg border border-emerald-200 flex items-center justify-center">
+                      <ImageIcon className="h-6 w-6 text-emerald-400" />
+                    </div>
+                  )}
+                </motion.div>
+                
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-emerald-900 text-sm truncate">
+                    {categorie.nom_categorie}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
+                    <p className="text-xs text-emerald-600/70 font-medium truncate">
+                      ID: {categorie.hashid}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+
+              {/* Badge indicateur */}
+              <motion.div 
+                className="mt-3 pt-2 border-t border-emerald-100"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 + (index * 0.1) }}
+              >
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-emerald-500/60">
+                    {categorie.image_categorie ? 'Avec image' : 'Sans image'}
+                  </span>
+                  <motion.div 
+                    className={`w-2 h-2 rounded-full ${
+                      categorie.image_categorie ? 'bg-emerald-400' : 'bg-amber-400'
+                    }`}
+                    whileHover={{ scale: 1.5 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+
+      {/* Statistiques */}
+      {categories.length > 0 && (
+        <motion.div 
+          className="mt-6 pt-4 border-t border-emerald-100"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+        >
+          <div className="flex flex-wrap gap-4 text-sm text-emerald-600/70">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+              <span>Total: {categories.length} catégorie{categories.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+              <span>
+                {categories.filter(cat => cat.image_categorie).length} avec image
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-amber-400 rounded-full"></div>
+              <span>
+                {categories.filter(cat => !cat.image_categorie).length} sans image
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
   );
 };
 
