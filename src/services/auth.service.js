@@ -1,4 +1,3 @@
-// ✅ auth.service.js
 import { axiosInstance } from "../api/axiosInstance";
 
 const registerBoutique = async (userData) => {

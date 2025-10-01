@@ -6,8 +6,6 @@ import {
   BarChart3,
   ShoppingBag,
   ShoppingCart,
-  // Calendar,
-  // Settings,
   LogOut,
   Layers,
 } from "lucide-react";
