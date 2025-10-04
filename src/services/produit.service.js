@@ -1,8 +1,5 @@
 import { axiosInstance } from "../api/axiosInstance";
-import { API_URL } from "../api/config";
-//import axios from "axios";
 
-// CREATE
 const ajouterProduit = async (formData) => {
   return await axiosInstance.post("/api/article/ajout", formData, {
     headers: {
@@ -11,16 +8,20 @@ const ajouterProduit = async (formData) => {
   });
 };
 
-// READ
 const listerProduits = async () => {
+  const boutiqueHashId = localStorage.getItem("boutiqueHashId");
+
+  if (!boutiqueHashId) {
+    throw new Error("Aucun HashID de boutique trouvé. Veuillez vous reconnecter.");
+  }
+
   return await axiosInstance.get("/api/article/boutique", {
-    headers: {
-      Accept: "application/json",
-    },
+    params: {
+      boutiqueHashId: boutiqueHashId
+    }
   });
 };
 
-// UPDATE
 const updateProduit = async (hashid, formData) => {
   return await axiosInstance.post(`/api/article/${hashid}/update`, formData, {
     headers: {
@@ -29,18 +30,12 @@ const updateProduit = async (hashid, formData) => {
   });
 };
 
-// DELETE
 const deleteProduit = async (hashid) => {
-  return await axiosInstance.delete(`/api/article/${hashid}/delete`);
+  return await axiosInstance.post(`/api/article/${hashid}/delete`);
 };
 
-// GET CATEGORIES
 const getCategories = async () => {
-  return await axiosInstance.get("/api/categories", {
-    headers: {
-      Accept: "application/json",
-    },
-  });
+  return await axiosInstance.get("/api/categories");
 };
 
 export const produitService = {

@@ -20,43 +20,59 @@ const useAuthStore = create((set) => ({
     set({ user: userData });
   },
 
-  registerBoutique: async (formData) => {
-    set({ loading: true });
-    try {
-      const response = await authService.registerBoutique(formData);
-      const { data, token } = response.data;
-      const userData = { ...data, token };
+// ✅ auth.store.js - PARTIE À CORRIGER
+registerBoutique: async (formData) => {
+  set({ loading: true });
+  try {
+    const response = await authService.registerBoutique(formData);
+    const { data, token } = response.data;
+    const userData = { ...data, token };
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userData));
-      set({ user: userData, loading: false });
+    // ✅ Sauvegarde du token + user
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
 
-      return response;
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message;
-      set({ error: errorMessage, showError: true, loading: false });
-      throw error;
+    // ✅ CORRECTION : Utilisez la même clé que dans le service
+    if (data?.hashid) {
+      localStorage.setItem("boutiqueHashId", data.hashid);
+      console.log("HashID sauvegardé:", data.hashid); // Pour debug
     }
-  },
 
-  loginBoutique: async (credentials) => {
-    set({ loading: true });
-    try {
-      const response = await authService.loginBoutique(credentials);
-      const { data, token } = response.data;
-      const userData = { ...data, token };
+    set({ user: userData, loading: false });
+    return response;
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || error.message;
+    set({ error: errorMessage, showError: true, loading: false });
+    throw error;
+  }
+},
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userData));
-      set({ user: userData, loading: false });
+loginBoutique: async (credentials) => {
+  set({ loading: true });
+  try {
+    const response = await authService.loginBoutique(credentials);
+    const { data, token } = response.data;
+    const userData = { ...data, token };
 
-      return response;
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message;
-      set({ error: errorMessage, showError: true, loading: false });
-      throw error;
+    // ✅ Sauvegarde du token + user
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    // ✅ CORRECTION : Utilisez la même clé que dans le service
+    if (data?.hashid) {
+      localStorage.setItem("boutiqueHashId", data.hashid);
+      console.log("HashID sauvegardé:", data.hashid); // Pour debug
     }
-  },
+
+    set({ user: userData, loading: false });
+    return response;
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || error.message;
+    set({ error: errorMessage, showError: true, loading: false });
+    throw error;
+  }
+},
+
 
   logout: () => {
     localStorage.removeItem("token");
