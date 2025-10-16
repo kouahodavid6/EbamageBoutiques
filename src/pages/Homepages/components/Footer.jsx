@@ -23,7 +23,7 @@ const Footer = () => {
               </Link>
             </div>
             <p className="text-sm text-emerald-100/80 mb-4 leading-relaxed">
-              La plateforme e-commerce dédiée aux petits commerçants pour une croissance verte et durable
+              La plateforme e-commerce qui facilite la vente et l'achat d'articles en toute sécurité
             </p>
           </div>
 

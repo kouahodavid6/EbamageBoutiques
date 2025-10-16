@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Image, X, Plus, ChevronDown, Upload, Package } from "lucide-react";
 import useProduitStore from "../../../stores/produit.store";
 import useCategorieStore from "../../../stores/categorie.store";
-import { getVariationsShop } from "../../../services/variation.service";
+// import { getVariationsShop } from "../../../services/libelleVariation.service";
 import { motion, AnimatePresence } from "framer-motion";
 
 const RegisterProduitsModal = ({

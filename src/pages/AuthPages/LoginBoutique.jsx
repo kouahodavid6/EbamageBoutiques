@@ -60,7 +60,7 @@ const LoginBoutique = () => {
             {/* SOUS-TITRE */}
             <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-100 rounded-lg p-4 mb-6">
                 <p className="text-sm text-emerald-700/80 text-center leading-relaxed">
-                    Reprenez le contrôle de votre boutique avec une gestion simplifiée et écologique
+                    Reprenez le contrôle de votre boutique avec une gestion simplifiée
                 </p>
             </div>
 

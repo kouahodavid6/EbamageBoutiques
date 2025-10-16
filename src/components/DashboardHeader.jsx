@@ -1,5 +1,6 @@
 import { Menu, Bell,Store } from 'lucide-react';
 import useAuthStore from '../stores/auth.store';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const DashboardHeader = ({ title, toggleSidebar }) => {
@@ -45,28 +46,32 @@ const DashboardHeader = ({ title, toggleSidebar }) => {
                 </motion.button>
 
                 {/* Avatar + infos utilisateur */}
-                <motion.div 
-                    className="flex items-center space-x-3 border-l pl-4 border-emerald-100"
-                    whileHover={{ x: 2 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                <Link
+                    to="/dashboard-boutique/profil"
                 >
-                    <div className="relative">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center text-white font-semibold shadow-lg">
-                            {initiale}
+                    <motion.div 
+                        className="flex items-center space-x-3 border-l pl-4 border-emerald-100"
+                        whileHover={{ x: 2 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                        <div className="relative">
+                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center text-white font-semibold shadow-lg">
+                                {initiale}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
+                                <Store className="w-2 h-2 text-white" />
+                            </div>
                         </div>
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
-                            <Store className="w-2 h-2 text-white" />
+                        
+                        <div className="hidden md:block">
+                            <p className="text-sm font-bold text-emerald-800">{nom}</p>
+                            <div className="flex items-center space-x-1">
+                                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
+                                <p className="text-xs text-emerald-600 font-medium">Votre Boutique</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div className="hidden md:block">
-                        <p className="text-sm font-bold text-emerald-800">{nom}</p>
-                        <div className="flex items-center space-x-1">
-                            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
-                            <p className="text-xs text-emerald-600 font-medium">Votre Boutique</p>
-                        </div>
-                    </div>
-                </motion.div>
+                    </motion.div>
+                </Link>
             </div>
 
             {/* Ligne décorative en bas */}

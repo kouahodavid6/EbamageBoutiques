@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { Star, Quote, Leaf } from 'lucide-react';
+import { Star, Quote, Store } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const CartesTemoignages = ({ name, role, testimonial, avatar }) => (
@@ -27,7 +27,7 @@ const CartesTemoignages = ({ name, role, testimonial, avatar }) => (
                     />
                 ))}
                 <div className="ml-2 flex items-center">
-                    <Leaf className="w-4 h-4 text-emerald-500 ml-1" />
+                    <Store className="w-4 h-4 text-emerald-500 ml-1" />
                     <span className="text-xs font-medium text-emerald-600 ml-1">Éco</span>
                 </div>
             </div>
@@ -47,7 +47,7 @@ const CartesTemoignages = ({ name, role, testimonial, avatar }) => (
                         className="w-14 h-14 rounded-2xl object-cover mr-4 border-2 border-emerald-100 group-hover:border-emerald-200 transition-colors duration-300 shadow-sm"
                     />
                     <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
-                        <Leaf className="w-3 h-3 text-white" />
+                        <Store className="w-3 h-3 text-white" />
                     </div>
                 </div>
                 <div>

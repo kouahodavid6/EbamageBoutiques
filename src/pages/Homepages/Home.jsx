@@ -84,7 +84,7 @@ const Home = () => {
                     >
                         <div className="bg-emerald-100 border border-emerald-200 rounded-full px-4 py-2 flex items-center space-x-2">
                             <Store className="w-4 h-4 text-emerald-600" />
-                            <span className="text-sm font-medium text-emerald-700">Solution e-commerce écologique</span>
+                            <span className="text-sm font-medium text-emerald-700">Plateforme e-commerce sécurisée</span>
                         </div>
                     </motion.div>
 
@@ -93,14 +93,14 @@ const Home = () => {
                         className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
                     >
                         Développez votre commerce{' '}
-                        <span className="bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent">durablement</span>
+                        <span className="bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent">en toute sécurité</span>
                     </motion.h1>
                 
                     <motion.p 
                         variants={itemVariants}
                         className="text-xl md:text-2xl text-emerald-700/80 mb-8 max-w-3xl mx-auto leading-relaxed"
                     >
-                        Une vitrine professionnelle, des outils puissants et une croissance responsable pour votre entreprise
+                        Une vitrine professionnelle, des outils puissants et une croissance fiable pour votre entreprise
                     </motion.p>
                 
                     <motion.div 
@@ -140,7 +140,7 @@ const Home = () => {
             <Section className="bg-gradient-to-b from-white to-emerald-50/30">
                 <EnteteSections 
                     title="Pourquoi choisir Ebamage ?"
-                    text="Des outils innovants pour une croissance responsable et durable"
+                    text="Des outils innovants pour une croissance fiable et sécurisée"
                 />
 
                 <Card>
@@ -187,10 +187,10 @@ const Home = () => {
                     className="relative"
                 >
                     <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                        Prêt pour une croissance verte ?
+                        Prêt à développer votre commerce ?
                     </h2>
                     <p className="text-xl text-emerald-100 mb-8 max-w-2xl mx-auto">
-                        Rejoignez la communauté des commerçants qui allient performance et responsabilité écologique
+                        Rejoignez la communauté des commerçants qui allient performance et sécurité
                     </p>
                     <Link to="/inscriptionBoutique">
                         <motion.button

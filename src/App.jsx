@@ -12,6 +12,7 @@ import DashboardBoutiqueProduits from './pages/DashboardBoutiquePages/DashboardB
 import DashboardBoutiqueCommandes from './pages/DashboardBoutiquePages/DashboardBoutiqueCommandes';
 import DashboardBoutiqueParametre from './pages/DashboardBoutiquePages/DashboardBoutiqueParametre';
 import DashboardBoutiqueVariations from './pages/DashboardBoutiquePages/DashboardBoutiqueVariations';
+import DashboardBoutiqueProfil from './pages/DashboardBoutiquePages/DashboardBoutiqueProfil';
 
 import NotFound from './components/NotFound';
 
@@ -103,13 +104,21 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
             {/* Dashboard-boutique - Variations */}
             <Route 
               path='/dashboard-boutique/variations'
               element={
                 <ProtectedRoute>
                   <DashboardBoutiqueVariations />
+                </ProtectedRoute>
+              }
+            />
+            {/* Dashboard-boutique - profil */}
+            <Route 
+              path='/dashboard-boutique/profil'
+              element={
+                <ProtectedRoute>
+                  <DashboardBoutiqueProfil />
                 </ProtectedRoute>
               }
             />
