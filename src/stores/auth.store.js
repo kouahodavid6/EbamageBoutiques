@@ -32,10 +32,9 @@ registerBoutique: async (formData) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
 
-    // ✅ CORRECTION : Utilisez la même clé que dans le service
     if (data?.hashid) {
       localStorage.setItem("boutiqueHashId", data.hashid);
-      console.log("HashID sauvegardé:", data.hashid); // Pour debug
+      // console.log("HashID sauvegardé:", data.hashid); // Pour debug
     }
 
     set({ user: userData, loading: false });
@@ -58,10 +57,9 @@ loginBoutique: async (credentials) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
 
-    // ✅ CORRECTION : Utilisez la même clé que dans le service
     if (data?.hashid) {
       localStorage.setItem("boutiqueHashId", data.hashid);
-      console.log("HashID sauvegardé:", data.hashid); // Pour debug
+      // console.log("HashID sauvegardé:", data.hashid); // Pour debug
     }
 
     set({ user: userData, loading: false });

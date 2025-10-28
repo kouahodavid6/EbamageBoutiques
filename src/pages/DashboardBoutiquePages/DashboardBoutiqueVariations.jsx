@@ -67,7 +67,7 @@ const DashboardBoutiqueVariation = () => {
             {/* Main */}
             <div className="flex-1 min-w-0 flex flex-col">
                 <DashboardHeader
-                    title="Gestion des libellés de variations"
+                    title="Variations"
                     toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
                 />
 

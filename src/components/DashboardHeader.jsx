@@ -1,16 +1,19 @@
-import { Menu, Bell,Store } from 'lucide-react';
-import useAuthStore from '../stores/auth.store';
+import { Menu, Bell, Store } from 'lucide-react';
+import useBoutiqueInfoStore from "../stores/infoBoutique.store";
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const DashboardHeader = ({ title, toggleSidebar }) => {
-    const user = useAuthStore((state) => state.user);
+    const { boutique, loading } = useBoutiqueInfoStore();
 
-    // Sécurité : on vérifie si user est bien présent
-    const nom = user?.nom_btq?.toUpperCase() || 'Utilisateur';
+    // Sécurité : on vérifie si boutique est bien présent
+    const nom = boutique?.nom_btq?.toUpperCase() || 'Boutique';
     
     // Récupérer la première lettre pour l'avatar
     const initiale = nom.charAt(0);
+
+    // Vérifier si la boutique a une image
+    const hasImage = boutique?.image_btq;
 
     return (
         <header 
@@ -55,20 +58,47 @@ const DashboardHeader = ({ title, toggleSidebar }) => {
                         transition={{ type: "spring", stiffness: 400, damping: 10 }}
                     >
                         <div className="relative">
-                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center text-white font-semibold shadow-lg">
-                                {initiale}
-                            </div>
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
-                                <Store className="w-2 h-2 text-white" />
-                            </div>
+                            {loading ? (
+                                // Skeleton pendant le chargement
+                                <div className="w-10 h-10 rounded-2xl bg-emerald-100 animate-pulse"></div>
+                            ) : hasImage ? (
+                                // Afficher l'image si elle existe
+                                <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-lg">
+                                    <img
+                                        src={boutique.image_btq}
+                                        alt={`Photo de ${nom}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                            ) : (
+                                // Afficher l'avatar avec initiale si pas d'image
+                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center text-white font-semibold shadow-lg">
+                                    {initiale}
+                                </div>
+                            )}
+                            {!loading && (
+                                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
+                                    <Store className="w-2 h-2 text-white" />
+                                </div>
+                            )}
                         </div>
                         
                         <div className="hidden md:block">
-                            <p className="text-sm font-bold text-emerald-800">{nom}</p>
-                            <div className="flex items-center space-x-1">
-                                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
-                                <p className="text-xs text-emerald-600 font-medium">Votre Boutique</p>
-                            </div>
+                            {loading ? (
+                                // Skeleton pour le texte
+                                <div className="space-y-1">
+                                    <div className="h-4 bg-emerald-100 rounded w-20 animate-pulse"></div>
+                                    <div className="h-3 bg-emerald-100 rounded w-16 animate-pulse"></div>
+                                </div>
+                            ) : (
+                                <>
+                                    <p className="text-sm font-bold text-emerald-800">{nom}</p>
+                                    <div className="flex items-center space-x-1">
+                                        <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
+                                        <p className="text-xs text-emerald-600 font-medium">Votre Boutique</p>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 </Link>

@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Plus, X, Check } from "lucide-react";
 import useLibelleVariationStore from "../../../stores/libelleVariation.store";
 
-const FormulaireLibelles = ({ variations, loading }) => {
+const FormulaireLibelles = () => {
     const [selectedVariation, setSelectedVariation] = useState("");
     const [libelles, setLibelles] = useState([""]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const { ajouterLibelles } = useLibelleVariationStore();
+    const { variations, fetchVariations, loading, ajouterLibelles } = useLibelleVariationStore();
+
+    // Charger les variations au montage du composant
+    useEffect(() => {
+        fetchVariations();
+    }, [fetchVariations]);
+
+    // Debug: afficher les variations dans la console
+    useEffect(() => {
+        console.log("Variations disponibles:", variations);
+    }, [variations]);
 
     // Ajouter un nouveau champ libellé
     const ajouterChampLibelle = () => {
@@ -93,6 +103,9 @@ const FormulaireLibelles = ({ variations, loading }) => {
                         </option>
                     ))}
                 </select>
+                <p className="text-green-600 text-xs mt-2">
+                    {variations.length} variation(s) disponible(s)
+                </p>
             </div>
 
             {/* Champs des libellés */}
@@ -150,7 +163,7 @@ const FormulaireLibelles = ({ variations, loading }) => {
             {/* Bouton de validation */}
             <motion.button
                 type="submit"
-                disabled={isLoading || !selectedVariation}
+                disabled={isLoading || !selectedVariation || !libelles.some(lib => lib.trim() !== "")}
                 className={`w-full py-4 rounded-xl flex items-center justify-center space-x-3 transition-colors font-medium ${
                     selectedVariation && libelles.some(lib => lib.trim() !== "")
                         ? "bg-green-600 hover:bg-green-700 text-white shadow-md" 
@@ -164,6 +177,20 @@ const FormulaireLibelles = ({ variations, loading }) => {
                     {isLoading ? "Ajout en cours..." : "Valider les libellés"}
                 </span>
             </motion.button>
+
+            {/* Debug info */}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <p className="text-blue-700 text-sm">
+                    <strong>Debug:</strong> {variations.length} variation(s) chargée(s)
+                </p>
+                {variations.length > 0 && (
+                    <ul className="text-blue-600 text-xs mt-2">
+                        {variations.map(v => (
+                            <li key={v.hashid}>- {v.nom_variation} (ID: {v.hashid})</li>
+                        ))}
+                    </ul>
+                )}
+            </div>
         </form>
     );
 };

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Save, Eye, EyeOff } from "lucide-react";
 import useBoutiqueInfoStore from "../../../stores/infoBoutique.store";
+import toast from "react-hot-toast";
 
 const PasswordForm = () => {
     const [formData, setFormData] = useState({
@@ -16,20 +17,20 @@ const PasswordForm = () => {
     });
     const [isLoading, setIsLoading] = useState(false);
 
-    const { updatePassword } = useBoutiqueInfoStore();
+    const { updateBoutiquePassword } = useBoutiqueInfoStore();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         
         if (formData.nouveau_password !== formData.nouveau_password_confirmation) {
-            alert("Les mots de passe ne correspondent pas");
+            toast.error("Les mots de passe ne correspondent pas");
             return;
         }
 
         setIsLoading(true);
 
         try {
-            await updatePassword(formData);
+            await updateBoutiquePassword(formData);
             setFormData({
                 ancien_password: "",
                 nouveau_password: "",

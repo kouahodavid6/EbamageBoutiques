@@ -6,6 +6,7 @@ import DashboardHeader from "../../components/DashboardHeader";
 import useBoutiqueInfoStore from "../../stores/infoBoutique.store";
 import InfoForm from "./components/InfoForm";
 import PasswordForm from "./components/PasswordForm";
+import ImageUpload from "./components/ImageUpload";
 
 const DashboardBoutiqueProfil = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -116,11 +117,25 @@ const DashboardBoutiqueProfil = () => {
                             >
                                 <div className="flex items-center space-x-4">
                                     <motion.div 
-                                        className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center"
+                                        className={`relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-green-200 ${
+                                            boutique?.image_btq ? '' : 'bg-green-100'
+                                        }`}
                                         whileHover={{ scale: 1.05 }}
                                         transition={{ type: "spring", stiffness: 300 }}
                                     >
-                                        <Store className="w-8 h-8 text-green-600" />
+                                        {boutique?.image_btq ? (
+                                            // Afficher l'image si elle existe
+                                            <img
+                                                src={boutique.image_btq}
+                                                alt={`Photo de ${boutique.nom_btq}`}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            // Afficher l'icône Store si pas d'image
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <Store className="w-8 h-8 text-green-600" />
+                                            </div>
+                                        )}
                                     </motion.div>
                                     <div>
                                         <motion.h1 
@@ -203,7 +218,13 @@ const DashboardBoutiqueProfil = () => {
                                             animate="visible"
                                             exit="exit"
                                         >
-                                            <InfoForm boutique={boutique} loading={loading} />
+                                            <div className="p-6">
+                                                {/* Composant d'upload d'image */}
+                                                <ImageUpload boutique={boutique} loading={loading} />
+                                                
+                                                {/* Formulaire d'informations */}
+                                                <InfoForm boutique={boutique} loading={loading} />
+                                            </div>
                                         </motion.div>
                                     )}
                                     {activeTab === "password" && (
