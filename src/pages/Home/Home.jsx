@@ -111,7 +111,7 @@ const Home = () => {
                             variants={floatingVariants}
                             animate="animate"
                         >
-                            <Link to="/inscriptionBoutique">
+                            <Link to="/register">
                                 <motion.button
                                     variants={buttonVariants}
                                     whileHover="hover"
@@ -192,7 +192,7 @@ const Home = () => {
                     <p className="text-xl text-emerald-100 mb-8 max-w-2xl mx-auto">
                         Rejoignez la communauté des commerçants qui allient performance et sécurité
                     </p>
-                    <Link to="/inscriptionBoutique">
+                    <Link to="/register">
                         <motion.button
                             variants={buttonVariants}
                             whileHover="hover"

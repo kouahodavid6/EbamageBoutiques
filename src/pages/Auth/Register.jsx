@@ -210,7 +210,7 @@ const Register = () => {
                 <p className="text-center text-sm text-emerald-700">
                     Vous avez déjà une boutique ?{" "}
                     <Link
-                        to="/connexionBoutique"
+                        to="/login"
                         className="font-semibold text-emerald-600 hover:text-emerald-800 underline transition-colors duration-300"
                     >
                         Connectez-vous ici
