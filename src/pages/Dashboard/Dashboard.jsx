@@ -134,7 +134,7 @@ const Dashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                 <Link
-                                    to="/dashboard-boutique/produits"
+                                    to="/produits"
                                     className="group flex items-center justify-between p-6 border-2 border-dashed border-emerald-200 rounded-xl hover:border-emerald-400 hover:bg-emerald-50/50 transition-all duration-300"
                                 >
                                     <div className="flex items-center space-x-4">
@@ -160,7 +160,7 @@ const Dashboard = () => {
 
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                 <Link 
-                                    to="/dashboard-boutique/commandes"
+                                    to="/commandes"
                                     className="group flex items-center justify-between p-6 border-2 border-dashed border-emerald-200 rounded-xl hover:border-emerald-400 hover:bg-emerald-50/50 transition-all duration-300"
                                 >
                                     <div className="flex items-center space-x-4">

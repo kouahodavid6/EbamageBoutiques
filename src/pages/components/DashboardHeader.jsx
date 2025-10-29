@@ -50,7 +50,7 @@ const DashboardHeader = ({ title, toggleSidebar }) => {
 
                 {/* Avatar + infos utilisateur */}
                 <Link
-                    to="/dashboard-boutique/profil"
+                    to="/profil"
                 >
                     <motion.div 
                         className="flex items-center space-x-3 border-l pl-4 border-emerald-100"
