@@ -27,7 +27,7 @@ const Login = () => {
             const res = await loginBoutique(formData);
             console.log("Connexion réussie :", res);
 
-            navigate("/dashboard-boutique");
+            navigate("/dashboard");
         } catch (error) {
             console.error("Erreur lors de la connexion :", error);
         }

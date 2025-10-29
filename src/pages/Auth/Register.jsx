@@ -28,7 +28,7 @@ const Register = () => {
         try {
             const res = await registerBoutique(formData);
             console.log("Inscription réussie:", res);
-            navigate("/dashboard-boutique");
+            navigate("/dashboard");
         } catch (error) {
             console.error("Erreur lors de l'inscription :", error);
         }

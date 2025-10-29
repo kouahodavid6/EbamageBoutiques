@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import useAuthStore from "../../stores/auth.store";
 import { useNavigate } from "react-router-dom";
-import ConfirmLogoutModal from "./DeleteConfirmModal"
+import ConfirmLogoutModal from "../../components/ConfirmLogoutModal"
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 
@@ -27,7 +27,7 @@ const DashboardSidebar = () => {
     try {
       localStorage.removeItem("token");
       logout();
-      navigate("/connexionBoutique");
+      navigate("/login");
       toast.success("Déconnexion effectuée avec succès !");
     } catch (error) {
       toast.error("Erreur lors de la déconnexion !");
@@ -44,22 +44,22 @@ const DashboardSidebar = () => {
       icon: <BarChart3 className="h-5 w-5" />,
     },
     {
-      path: "produits",
+      path: "/produits",
       name: "Produits",
       icon: <ShoppingBag className="h-5 w-5" />,
     },
     {
-      path: "variations",
+      path: "/variations",
       name: "Variations",
       icon: <Layers className="h-5 w-5" />,
     },
     {
-      path: "commandes",
+      path: "/commandes",
       name: "Commandes",
       icon: <ShoppingCart className="h-5 w-5" />,
     },
     {
-      path: "profil",
+      path: "/profil",
       name: "Profil",
       icon: <User className="h-5 w-5" />,
     },

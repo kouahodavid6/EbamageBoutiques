@@ -10,7 +10,7 @@ const ProtectedRoute = ({ children }) => {
   
   // Si l'utilisateur n'est pas connecté, rediriger vers la page de connexion
   if (!user) {
-    return <Navigate to="/connexionBoutique" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // Si l'utilisateur est connecté, afficher le contenu de la route
