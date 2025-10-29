@@ -66,11 +66,11 @@ const NotFound = () => {
                     transition={{ delay: 1 }}
                 >
                     <Link
-                        to="/"
+                        to="/dashboard"
                         className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-emerald-200/50 transform hover:-translate-y-1"
                     >
                         <Home className="h-5 w-5" />
-                        Retour à l'accueil
+                        Retour à l'interface
                     </Link>
                 </motion.div>
 
@@ -82,7 +82,7 @@ const NotFound = () => {
                     transition={{ delay: 1.2 }}
                 >
                     <Store className="h-4 w-4" />
-                    Revenez vers notre écosystème durable
+                    Revenez vers votre espace Ebamage
                 </motion.p>
             </motion.div>
 
