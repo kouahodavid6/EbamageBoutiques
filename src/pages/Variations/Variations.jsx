@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, List, Tag } from "lucide-react";
-import DashboardSidebar from "../../components/DashboardSidebar";
-import DashboardHeader from "../../components/DashboardHeader";
+import DashboardSidebar from "../../pages/components/DashboardSidebar"
+import DashboardHeader from "../../pages/components/DashboardHeader";
 import useLibelleVariationStore from "../../stores/libelleVariation.store";
 import FormulaireLibelles from "./components/FormulaireLibelles";
 import ListeVariationsAvecLibelles from "./components/ListeVariationsAvecLibelles";
 
-const DashboardBoutiqueVariation = () => {
+const Variations = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     
     const { variations, fetchVariations, loading } = useLibelleVariationStore();
@@ -141,4 +141,4 @@ const DashboardBoutiqueVariation = () => {
     );
 };
 
-export default DashboardBoutiqueVariation;
+export default Variations;

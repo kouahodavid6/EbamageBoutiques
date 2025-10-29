@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import DashboardSidebar from "../../components/DashboardSidebar";
-import DashboardHeader from "../../components/DashboardHeader";
+import DashboardSidebar from "../../pages/components/DashboardSidebar"
+import DashboardHeader from "../../pages/components/DashboardHeader";
 import {
     Search,
     Filter,
@@ -20,7 +20,7 @@ import fr from "date-fns/locale/fr";
 import CommandeDetailsModal from "./components/CommandeDetailsModal";
 import { motion } from "framer-motion";
 
-const DashboardBoutiqueCommandes = () => {
+const Commandes = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCommande, setSelectedCommande] = useState(null);
@@ -369,4 +369,4 @@ const DashboardBoutiqueCommandes = () => {
     );
 };
 
-export default DashboardBoutiqueCommandes;
+export default Commandes;

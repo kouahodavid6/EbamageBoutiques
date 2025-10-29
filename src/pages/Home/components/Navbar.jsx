@@ -29,13 +29,13 @@ const Navbar = () => {
                     {/* Desktop navigation */}
                     <div className="hidden md:flex items-center space-x-3">
                         <Link 
-                            to="/connexionBoutique" 
+                            to="/login" 
                             className="border border-emerald-300 text-emerald-700 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-50 hover:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-emerald-100"
                         >
                             Connexion
                         </Link>
                         <Link 
-                            to="/inscriptionBoutique"
+                            to="/register"
                             className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:from-emerald-600 hover:to-green-600 transition-all duration-300 shadow-lg hover:shadow-emerald-200/50 transform hover:-translate-y-0.5"
                         >
                             Créer ma boutique
@@ -64,7 +64,7 @@ const Navbar = () => {
                 <div className="md:hidden bg-gradient-to-b from-emerald-50/95 to-green-50/95 backdrop-blur-md border-t border-emerald-200/60">
                     <div className="px-4 pt-3 pb-4 space-y-2">
                         <Link 
-                            to="/connexionBoutique" 
+                            to="/login" 
                             className="flex items-center px-4 py-3 rounded-xl text-emerald-700 text-base font-semibold bg-white/80 border border-emerald-100 hover:bg-white hover:border-emerald-200 transition-all duration-300 shadow-sm"
                             onClick={toggleMenu}
                         >
@@ -72,7 +72,7 @@ const Navbar = () => {
                             Connexion
                         </Link>
                         <Link 
-                            to="/inscriptionBoutique" 
+                            to="/register" 
                             className="flex items-center px-4 py-3 rounded-xl text-white text-base font-semibold bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 transition-all duration-300 shadow-lg"
                             onClick={toggleMenu}
                         >

@@ -1,5 +1,5 @@
 import { Menu, Bell, Store } from 'lucide-react';
-import useBoutiqueInfoStore from "../stores/infoBoutique.store";
+import useBoutiqueInfoStore from '../../stores/infoBoutique.store';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 

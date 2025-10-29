@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Store, Mail, Phone, Calendar, Key } from "lucide-react";
-import DashboardSidebar from "../../components/DashboardSidebar";
-import DashboardHeader from "../../components/DashboardHeader";
+import DashboardSidebar from "../../pages/components/DashboardSidebar"
+import DashboardHeader from "../../pages/components/DashboardHeader";
 import useBoutiqueInfoStore from "../../stores/infoBoutique.store";
 import InfoForm from "./components/InfoForm";
 import PasswordForm from "./components/PasswordForm";
 import ImageUpload from "./components/ImageUpload";
 
-const DashboardBoutiqueProfil = () => {
+const Profil = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("infos");
 
@@ -319,4 +319,4 @@ const DashboardBoutiqueProfil = () => {
     );
 };
 
-export default DashboardBoutiqueProfil;
+export default Profil;

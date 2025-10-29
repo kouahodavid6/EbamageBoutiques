@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import toast from "react-hot-toast";
 import {
   Plus,
@@ -9,17 +9,17 @@ import {
   Filter,
   Grid3X3,
 } from "lucide-react";
-import DashboardSidebar from "../../components/DashboardSidebar";
-import DashboardHeader from "../../components/DashboardHeader";
+import DashboardSidebar from "../../pages/components/DashboardSidebar"
+import DashboardHeader from "../../pages/components/DashboardHeader";
 import ProduitDetailsModal from "./components/ProduitDetailsModal";
 import RegisterProduitsModal from "./components/RegisterProduitsModal";
-import DeleteConfirmModal from "./components/DeleteConfirmModal";
-import CategoriesList from "../../components/CategoriesList";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import CategoriesList from "./components/CategoriesList";
 import useProduitStore from "../../stores/produit.store";
 import useCategorieStore from "../../stores/categorie.store";
 import { motion } from "framer-motion";
 
-const DashboardBoutiqueProduits = () => {
+const Produits = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -275,11 +275,29 @@ const DashboardBoutiqueProduits = () => {
       {/* Modals */}
       {showAddModal && <RegisterProduitsModal setShowAddModal={setShowAddModal} categories={categories} initialData={editProduct} isEdit={!!editProduct} onClose={closeAddModal} />}
 
-      <ProduitDetailsModal isOpen={detailsModalOpen} onClose={closeDetailsModal} produit={productDetails} onDelete={() => openDeleteModal(productDetails)} onEdit={() => openEditModal(productDetails)} />
+      <ProduitDetailsModal 
+        isOpen={detailsModalOpen} 
+        onClose={closeDetailsModal} 
+        produit={productDetails} 
+        onDelete={() => openDeleteModal(productDetails)} 
+        onEdit={() => openEditModal(productDetails)} 
+      />
 
-      <DeleteConfirmModal isOpen={deleteModalOpen} onConfirm={confirmDelete} onCancel={closeDeleteModal} entityName={productToDelete ? productToDelete.nom_article : "cet élément"} isDeleting={loading} />
+      <DeleteConfirmModal 
+        isOpen={deleteModalOpen} 
+        onConfirm={confirmDelete} 
+        onCancel={closeDeleteModal} 
+        entityName={
+          productToDelete 
+          ? 
+          productToDelete.nom_article 
+          : 
+          "cet élément"
+        } 
+        isDeleting={loading} 
+      />
     </div>
   );
 };
 
-export default DashboardBoutiqueProduits;
+export default Produits;

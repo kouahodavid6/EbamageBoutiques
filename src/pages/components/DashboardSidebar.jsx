@@ -6,12 +6,13 @@ import {
   BarChart3,
   ShoppingBag,
   ShoppingCart,
+  User,
   LogOut,
   Layers,
 } from "lucide-react";
-import useAuthStore from '../stores/auth.store';
+import useAuthStore from "../../stores/auth.store";
 import { useNavigate } from "react-router-dom";
-import ConfirmLogoutModal from "./../components/ConfirmLogoutModal";
+import ConfirmLogoutModal from "./DeleteConfirmModal"
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 
@@ -38,24 +39,29 @@ const DashboardSidebar = () => {
 
   const sidebarItems = [
     {
-      path: "/dashboard-boutique",
+      path: "/dashboard",
       name: "Tableau de bord",
       icon: <BarChart3 className="h-5 w-5" />,
     },
     {
-      path: "/dashboard-boutique/produits",
+      path: "produits",
       name: "Produits",
       icon: <ShoppingBag className="h-5 w-5" />,
     },
     {
-      path: "/dashboard-boutique/variations",
+      path: "variations",
       name: "Variations",
       icon: <Layers className="h-5 w-5" />,
     },
     {
-      path: "/dashboard-boutique/commandes",
+      path: "commandes",
       name: "Commandes",
       icon: <ShoppingCart className="h-5 w-5" />,
+    },
+    {
+      path: "profil",
+      name: "Profil",
+      icon: <User className="h-5 w-5" />,
     },
   ];
 

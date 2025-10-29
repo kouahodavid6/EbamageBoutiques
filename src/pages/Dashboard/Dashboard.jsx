@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, ShoppingCart, TrendingUp, Package, Users, Store } from "lucide-react";
 
-import DashboardSidebar from "../../components/DashboardSidebar";
-import DashboardHeader from "../../components/DashboardHeader";
+import DashboardSidebar from "../../pages/components/DashboardSidebar"
+import DashboardHeader from "../../pages/components/DashboardHeader";
 import { motion } from "framer-motion";
 
 /* ------------------------------------------------------------- */
-const DashboardBoutique = () => {
+const Dashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     /* ============================================================= */
@@ -227,4 +227,4 @@ const DashboardBoutique = () => {
     );
 };
 
-export default DashboardBoutique;
+export default Dashboard;

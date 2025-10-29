@@ -1,19 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
-import ContainerForms from "./components/ContainerForms";
 import Input from "../../components/Input";
-import { ArrowLeft, Store, AlertCircle, HandHeart, Sparkles } from "lucide-react";
+import { ArrowLeft, Store, AlertCircle, HandHeart } from "lucide-react";
 import { useState } from "react";
 import useAuthStore from "../../stores/auth.store";
+import ContainerForms from "./components/ContainerForms";
 
-const RegisterBoutique = () => {
+const Login = () => {
     const [formData, setFormData] = useState({
-        nom_btq: "",
         email_btq: "",
-        tel_btq: "",
-        password_btq: ""
+        password_btq: "",
     });
 
-    const { registerBoutique, error, clearError, loading } = useAuthStore();
+    const { loginBoutique, error, clearError, loading } = useAuthStore();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -26,83 +24,52 @@ const RegisterBoutique = () => {
         clearError();
 
         try {
-            const res = await registerBoutique(formData);
-            console.log("Inscription réussie:", res);
+            const res = await loginBoutique(formData);
+            console.log("Connexion réussie :", res);
+
             navigate("/dashboard-boutique");
         } catch (error) {
-            console.error("Erreur lors de l'inscription :", error);
+            console.error("Erreur lors de la connexion :", error);
         }
     };
 
     return (
         <ContainerForms>
-            {/* Header avec effet spécial */}
-            <div className="relative w-full flex items-center justify-between py-6 px-1">
+            {/* HEADER */}
+            <div className="w-full flex items-center justify-between py-4 px-1">
                 <Link
                     to="/"
                     className="rounded-full p-2 flex items-center justify-center transition-all duration-300 bg-emerald-100 hover:bg-emerald-200 border border-emerald-200 hover:border-emerald-300 group"
                 >
                     <ArrowLeft className="h-5 w-5 text-emerald-700 group-hover:text-emerald-800" />
                 </Link>
-                
                 <div className="text-center">
-                    <div className="flex items-center justify-center mb-1">
-                        <Sparkles className="h-4 w-4 text-emerald-500 mr-2" />
-                        <h2 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-700 to-green-600 bg-clip-text text-transparent">
-                            Nouvelle Boutique
-                        </h2>
-                    </div>
-                    <div className="flex items-center justify-center space-x-1">
+                    <h2 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-700 to-green-600 bg-clip-text text-transparent">
+                        Connexion Boutique
+                    </h2>
+                    <div className="flex items-center justify-center mt-1 space-x-1">
                         <HandHeart className="h-3 w-3 text-emerald-500" />
-                        <span className="text-xs text-emerald-600 font-medium">Rejoignez Ebamage</span>
+                        <span className="text-xs text-emerald-600 font-medium">Ebamage</span>
                     </div>
                 </div>
-                
                 <div className="bg-gradient-to-br from-emerald-400 to-green-500 p-2 rounded-xl shadow-lg">
                     <Store className="h-6 w-6 text-white" />
                 </div>
             </div>
 
-            {/* Sous-titre inspirant */}
+            {/* SOUS-TITRE */}
             <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-100 rounded-lg p-4 mb-6">
                 <p className="text-sm text-emerald-700/80 text-center leading-relaxed">
-                    <strong>Digitalisez votre commerce</strong> avec une solution spécialement pensée pour vous
+                    Reprenez le contrôle de votre boutique avec une gestion simplifiée
                 </p>
             </div>
 
-            {/* Formulaire */}
-            <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-                {/* Nom boutique */}
-                <div>
-                    <label htmlFor="nom_btq" className="block text-sm font-semibold text-emerald-800 mb-2">
-                        Nom de la boutique <span className="text-emerald-500">*</span>
-                    </label>
-                    <Input
-                        type="text"
-                        id="nom_btq"
-                        name="nom_btq"
-                        value={formData.nom_btq}
-                        onChange={handleChange}
-                        placeholder="Ma Super Boutique"
-                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-3 focus:ring-emerald-200 transition-all duration-300 ${
-                            error?.nom_btq 
-                                ? "border-red-300 bg-red-50" 
-                                : "border-emerald-200 focus:border-emerald-400"
-                        }`}
-                        required
-                    />
-                    {error?.nom_btq && (
-                        <p className="mt-2 text-sm text-red-600 flex items-center bg-red-50 px-3 py-2 rounded-lg">
-                            <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                            {error.nom_btq}
-                        </p>
-                    )}
-                </div>
-
+            {/* FORMULAIRE */}
+            <form onSubmit={handleSubmit} className="mt-8 space-y-6">
                 {/* Email */}
                 <div>
                     <label htmlFor="email_btq" className="block text-sm font-semibold text-emerald-800 mb-2">
-                        Email professionnel <span className="text-emerald-500">*</span>
+                        Email <span className="text-emerald-500">*</span>
                     </label>
                     <Input
                         type="email"
@@ -126,37 +93,10 @@ const RegisterBoutique = () => {
                     )}
                 </div>
 
-                {/* Téléphone */}
-                <div>
-                    <label htmlFor="tel_btq" className="block text-sm font-semibold text-emerald-800 mb-2">
-                        Téléphone <span className="text-emerald-500">*</span>
-                    </label>
-                    <Input
-                        type="text"
-                        id="tel_btq"
-                        name="tel_btq"
-                        value={formData.tel_btq}
-                        onChange={handleChange}
-                        placeholder="+225 01 01 01 01 01"
-                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-3 focus:ring-emerald-200 transition-all duration-300 ${
-                            error?.tel_btq 
-                                ? "border-red-300 bg-red-50" 
-                                : "border-emerald-200 focus:border-emerald-400"
-                        }`}
-                        required
-                    />
-                    {error?.tel_btq && (
-                        <p className="mt-2 text-sm text-red-600 flex items-center bg-red-50 px-3 py-2 rounded-lg">
-                            <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                            {error.tel_btq}
-                        </p>
-                    )}
-                </div>
-
-                {/* Mot de passe */}
+                {/* Password */}
                 <div>
                     <label htmlFor="password_btq" className="block text-sm font-semibold text-emerald-800 mb-2">
-                        Mot de passe sécurisé <span className="text-emerald-500">*</span>
+                        Mot de passe <span className="text-emerald-500">*</span>
                     </label>
                     <Input
                         type="password"
@@ -178,9 +118,16 @@ const RegisterBoutique = () => {
                             {error.password_btq}
                         </p>
                     )}
-                    <p className="mt-1 text-xs text-emerald-600/70">
-                        Utilisez au moins 8 caractères avec des chiffres et lettres
-                    </p>
+                </div>
+
+                {/* Lien mot de passe oublié */}
+                <div className="text-right">
+                    <Link
+                        to="/mot-de-passe-oublie"
+                        className="text-sm font-medium text-emerald-600 hover:text-emerald-800 transition-colors duration-300 hover:underline"
+                    >
+                        Mot de passe oublié ?
+                    </Link>
                 </div>
 
                 {/* Bouton de soumission */}
@@ -194,26 +141,23 @@ const RegisterBoutique = () => {
                     {loading ? (
                         <div className="flex items-center justify-center">
                             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                            Création en cours...
+                            Connexion en cours...
                         </div>
                     ) : (
-                        <div className="flex items-center justify-center">
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            Créer ma boutique Ebamage
-                        </div>
+                        "Se connecter à ma boutique"
                     )}
                 </button>
             </form>
 
-            {/* Footer avec lien de connexion */}
-            <div className="mt-8 p-4 bg-emerald-50/30 rounded-xl border border-emerald-100">
+            {/* LIEN VERS INSCRIPTION */}
+            <div className="mt-8 p-4 bg-emerald-50/50 rounded-xl border border-emerald-100">
                 <p className="text-center text-sm text-emerald-700">
-                    Vous avez déjà une boutique ?{" "}
+                    Vous n'avez pas encore de boutique ?{" "}
                     <Link
-                        to="/connexionBoutique"
+                        to="/inscriptionBoutique"
                         className="font-semibold text-emerald-600 hover:text-emerald-800 underline transition-colors duration-300"
                     >
-                        Connectez-vous ici
+                        Créer ma boutique Ebamage
                     </Link>
                 </p>
             </div>
@@ -221,4 +165,4 @@ const RegisterBoutique = () => {
     );
 };
 
-export default RegisterBoutique;
+export default Login;

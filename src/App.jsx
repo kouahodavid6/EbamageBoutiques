@@ -3,16 +3,16 @@ import { CheckCircle, XCircle } from "lucide-react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 
-import Home from './pages/Homepages/Home'
-import LoginBoutique from './pages/AuthPages/LoginBoutique';
-import RegisterBoutique from './pages/AuthPages/RegisterBoutique';
+import Home from './pages/Home/Home'
 
-import DashboardBoutique from './pages/DashboardBoutiquePages/DashboardBoutique';
-import DashboardBoutiqueProduits from './pages/DashboardBoutiquePages/DashboardBoutiqueProduits';
-import DashboardBoutiqueCommandes from './pages/DashboardBoutiquePages/DashboardBoutiqueCommandes';
-import DashboardBoutiqueParametre from './pages/DashboardBoutiquePages/DashboardBoutiqueParametre';
-import DashboardBoutiqueVariations from './pages/DashboardBoutiquePages/DashboardBoutiqueVariations';
-import DashboardBoutiqueProfil from './pages/DashboardBoutiquePages/DashboardBoutiqueProfil';
+import Login from './pages/Auth/Login'
+import Register from './pages/Auth/Register';
+
+import Dashboard from './pages/Dashboard/Dashboard';
+import Produits from './pages/Produits/Produits';
+import Commandes from './pages/Commandes/Commandes';
+import Variations from './pages/Variations/Variations';
+import Profil from './pages/Profil/Profil';
 
 import NotFound from './components/NotFound';
 
@@ -65,60 +65,51 @@ function App() {
             <Route path="/" element={<Home />} />
 
             {/* Authentification */}
-            <Route path="/connexionBoutique" element={<LoginBoutique />} />
-            <Route path="/inscriptionBoutique" element={<RegisterBoutique />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
             {/* Routes protégées - Dashboard */}
             <Route
-              path="/dashboard-boutique"
+              path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <DashboardBoutique />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
             {/* Dashboard-boutique - produits */}
             <Route
-              path="/dashboard-boutique/produits"
+              path="/produits"
               element={
                 <ProtectedRoute>
-                  <DashboardBoutiqueProduits />
+                  <Produits />
                 </ProtectedRoute>
               }
             />
             {/* Dashboard-boutique - Commandes */}
             <Route
-              path="/dashboard-boutique/commandes"
+              path="commandes"
               element={
                 <ProtectedRoute>
-                  <DashboardBoutiqueCommandes />
-                </ProtectedRoute>
-              }
-            />
-            {/* Dashboard-boutique - Paramètre */}
-            <Route 
-              path='/dashboard-boutique/parametre'
-              element={
-                <ProtectedRoute>
-                  <DashboardBoutiqueParametre />
+                  <Commandes />
                 </ProtectedRoute>
               }
             />
             {/* Dashboard-boutique - Variations */}
             <Route 
-              path='/dashboard-boutique/variations'
+              path='variations'
               element={
                 <ProtectedRoute>
-                  <DashboardBoutiqueVariations />
+                  <Variations />
                 </ProtectedRoute>
               }
             />
             {/* Dashboard-boutique - profil */}
             <Route 
-              path='/dashboard-boutique/profil'
+              path='profil'
               element={
                 <ProtectedRoute>
-                  <DashboardBoutiqueProfil />
+                  <Profil />
                 </ProtectedRoute>
               }
             />

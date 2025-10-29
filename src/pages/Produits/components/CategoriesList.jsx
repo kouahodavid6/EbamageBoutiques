@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import useCategorieStore from '../stores/categorie.store';
+import useCategorieStore from '../../../stores/categorie.store';
 import { motion } from 'framer-motion';
 import { Folder, Image as ImageIcon, Loader2 } from 'lucide-react';
 
