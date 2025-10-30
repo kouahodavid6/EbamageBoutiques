@@ -10,8 +10,8 @@ import Card from "./components/Card";
 import CartesRaisons from "./components/CartesRaisons";
 import CartesTemoignages from "./components/CartesTemoignages";
 
-import { raisonData } from '../../data/TDLHomeData';
-import { temoignageData } from "../../data/TDLHomeData";
+import { raisonData } from '../../data/HomeData';
+import { temoignageData } from "../../data/HomeData";
 import Footer from "./components/Footer";
 
 const Home = () => {

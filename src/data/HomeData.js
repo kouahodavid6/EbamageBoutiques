@@ -1,4 +1,4 @@
-import { Store, Zap, Shield, Users, TrendingUp, Globe, Heart } from "lucide-react";
+import { Store, Zap, Shield, Users, TrendingUp, Globe } from "lucide-react";
 
 export const raisonData = [
     {
