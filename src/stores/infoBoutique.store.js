@@ -57,20 +57,20 @@ const useBoutiqueInfoStore = create(
         try {
           const res = await InfoBoutique.updateBoutiqueImage(hashid, imageFile);
           toast.success(res.message || "Image de la boutique mise à jour avec succès !");
-          
+
           set((state) => ({
             boutique: {
               ...state.boutique,
               image_btq: res.data.image_btq
             }
           }));
-          
+
           return res;
         } catch (error) {
           const errorMessage = error.message || 
-                             error.errors?.image_btq?.[0] || 
-                             error.errors?.image?.[0] ||
-                             "Erreur lors de la mise à jour de l'image";
+                              error.errors?.image_btq?.[0] || 
+                              error.errors?.image?.[0] ||
+                              "Erreur lors de la mise à jour de l'image";
           toast.error(errorMessage);
           throw error;
         } finally {

@@ -31,10 +31,8 @@ const updateBoutiquePassword = async (data) => {
 const updateBoutiqueImage = async (hashid, imageFile) => {
     try {
         const formData = new FormData();
-        // Essayez différents noms de champs selon ce qu'attend l'API
-        formData.append('image_btq', imageFile); // Essayez ce nom
-        // ou formData.append('image', imageFile); // Ou celui-ci
-        // ou formData.append('photo', imageFile); // Ou celui-ci
+        
+        formData.append('image_btq', imageFile);
         
         const response = await axiosInstance.post(`/api/boutique/image/${hashid}/update`, formData, {
             headers: {
