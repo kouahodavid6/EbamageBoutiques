@@ -13,6 +13,7 @@ import Produits from './pages/Produits/Produits';
 import Commandes from './pages/Commandes/Commandes';
 import Variations from './pages/Variations/Variations';
 import Profil from './pages/Profil/Profil';
+import Notifications from './pages/notifications/Notifications';
 
 import NotFound from './components/NotFound';
 
@@ -110,6 +111,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Profil />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route 
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
                 </ProtectedRoute>
               }
             />

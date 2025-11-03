@@ -11,18 +11,14 @@ const useCommandeStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await commandeService.listerCommandes();
-      console.log("Response fetchCommandes", response.data);
 
-      const commandes = Array.isArray(response.data.data)
-        ? response.data.data
+      const commandes = Array.isArray(response.data)
+        ? response.data
         : [];
 
       set({ commandes, loading: false });
     } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        "Erreur lors du chargement des commandes";
-      console.log("Response catch fetchCommandes ", error);
+      const message = error.response?.data?.message || "Erreur lors du chargement des commandes";
       set({ error: message, loading: false });
     }
   },

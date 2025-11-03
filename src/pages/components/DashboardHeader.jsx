@@ -1,10 +1,11 @@
 import { Menu, Bell, Store } from 'lucide-react';
 import useBoutiqueInfoStore from '../../stores/infoBoutique.store';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Ajouter useNavigate
 import { motion } from 'framer-motion';
 
 const DashboardHeader = ({ title, toggleSidebar }) => {
     const { boutique, loading } = useBoutiqueInfoStore();
+    const navigate = useNavigate(); // Hook pour la navigation
 
     // Sécurité : on vérifie si boutique est bien présent
     const nom = boutique?.nom_btq?.toUpperCase() || 'Boutique';
@@ -14,6 +15,11 @@ const DashboardHeader = ({ title, toggleSidebar }) => {
 
     // Vérifier si la boutique a une image
     const hasImage = boutique?.image_btq;
+
+    // Fonction pour naviguer vers la page des notifications
+    const handleNotificationsClick = () => {
+        navigate('/notifications');
+    };
 
     return (
         <header 
@@ -38,8 +44,9 @@ const DashboardHeader = ({ title, toggleSidebar }) => {
 
             {/* Zone à droite : notifications + profil */}
             <div className="ml-auto flex items-center space-x-4">
-                {/* Bouton cloche de notifications */}
+                {/* Bouton cloche de notifications - MAINTENANT CLICKABLE */}
                 <motion.button 
+                    onClick={handleNotificationsClick}
                     className="p-2 rounded-full text-emerald-600 hover:bg-emerald-100/80 transition-all duration-300 relative border border-transparent hover:border-emerald-200"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -49,9 +56,7 @@ const DashboardHeader = ({ title, toggleSidebar }) => {
                 </motion.button>
 
                 {/* Avatar + infos utilisateur */}
-                <Link
-                    to="/profil"
-                >
+                <Link to="/profil">
                     <motion.div 
                         className="flex items-center space-x-3 border-l pl-4 border-emerald-100"
                         whileHover={{ x: 2 }}
