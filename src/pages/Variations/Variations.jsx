@@ -1,20 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, List, Tag } from "lucide-react";
 import DashboardSidebar from "../../pages/components/DashboardSidebar"
 import DashboardHeader from "../../pages/components/DashboardHeader";
-import useLibelleVariationStore from "../../stores/libelleVariation.store";
 import FormulaireLibelles from "./components/FormulaireLibelles";
 import ListeVariationsAvecLibelles from "./components/ListeVariationsAvecLibelles";
 
 const Variations = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    
-    const { variations, fetchVariations, loading } = useLibelleVariationStore();
-
-    useEffect(() => {
-        fetchVariations();
-    }, [fetchVariations]);
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -112,7 +105,8 @@ const Variations = () => {
                                         Ajouter des libellés
                                     </h2>
                                 </div>
-                                <FormulaireLibelles variations={variations} loading={loading} />
+                                {/* Formulaire d'ajout de libellés variations */}
+                                <FormulaireLibelles />
                             </motion.div>
 
                             {/* Liste des variations avec leurs libellés */}
@@ -128,10 +122,8 @@ const Variations = () => {
                                         Variations et leurs libellés
                                     </h2>
                                 </div>
-                                <ListeVariationsAvecLibelles 
-                                    variations={variations} 
-                                    loading={loading} 
-                                />
+                                {/* Liste des variations avec leurs libellés */}
+                                <ListeVariationsAvecLibelles />
                             </motion.div>
                         </motion.div>
                     </div>

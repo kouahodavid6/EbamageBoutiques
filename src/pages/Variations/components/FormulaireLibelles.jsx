@@ -1,198 +1,137 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Plus, X, Check } from "lucide-react";
-import useLibelleVariationStore from "../../../stores/libelleVariation.store";
+// src/pages/variations/components/FormulaireLibelles.jsx
+import { useEffect, useState } from "react";
+import useVariationStore from "../../../stores/variationLibelle.store";
+import { Plus, Trash2 } from "lucide-react";
 
 const FormulaireLibelles = () => {
-    const [selectedVariation, setSelectedVariation] = useState("");
-    const [libelles, setLibelles] = useState([""]);
-    const [isLoading, setIsLoading] = useState(false);
+  const { variations, fetchVariations, addLibelles, adding, loading } = useVariationStore();
+  const [selectedVariation, setSelectedVariation] = useState("");
+  const [fields, setFields] = useState([""]); // champs dynamiques pour libellés
 
-    const { variations, fetchVariations, loading, ajouterLibelles } = useLibelleVariationStore();
+  useEffect(() => {
+    // charger les variations s'il n'y en a pas
+    if (!variations || variations.length === 0) fetchVariations();
+  }, []); // eslint-disable-line
 
-    // Charger les variations au montage du composant
-    useEffect(() => {
-        fetchVariations();
-    }, [fetchVariations]);
+  const handleFieldChange = (index, value) => {
+    setFields((prev) => {
+      const copy = [...prev];
+      copy[index] = value;
+      return copy;
+    });
+  };
 
-    // Debug: afficher les variations dans la console
-    useEffect(() => {
-        console.log("Variations disponibles:", variations);
-    }, [variations]);
+  const addField = () => setFields((prev) => [...prev, ""]);
 
-    // Ajouter un nouveau champ libellé
-    const ajouterChampLibelle = () => {
-        setLibelles([...libelles, ""]);
-    };
+  const removeField = (index) => {
+    setFields((prev) => prev.filter((_, i) => i !== index));
+  };
 
-    // Supprimer un champ libellé
-    const supprimerChampLibelle = (index) => {
-        if (libelles.length > 1) {
-            setLibelles(libelles.filter((_, i) => i !== index));
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedVariation) return alert("Choisissez une variation.");
+    // nettoyer libellés : trim, enlever vides, uniques
+    const libelles = fields
+      .map((f) => (f || "").trim())
+      .filter((f) => f.length > 0)
+      .filter((v, i, a) => a.indexOf(v) === i);
 
-    // Modifier un libellé
-    const modifierLibelle = (index, value) => {
-        const nouveauxLibelles = [...libelles];
-        nouveauxLibelles[index] = value;
-        setLibelles(nouveauxLibelles);
-    };
+    if (libelles.length === 0) return alert("Ajoutez au moins un libellé valide.");
 
-    // Valider l'ajout des libellés
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        if (!selectedVariation) {
-            alert("Veuillez sélectionner une variation");
-            return;
-        }
-
-        // Filtrer les libellés vides
-        const libellesFiltres = libelles.filter(lib => lib.trim() !== "");
-        if (libellesFiltres.length === 0) {
-            alert("Veuillez ajouter au moins un libellé");
-            return;
-        }
-
-        setIsLoading(true);
-
-        try {
-            await ajouterLibelles({
-                variation_id: selectedVariation,
-                lib_variation: libellesFiltres
-            });
-            
-            // Réinitialiser le formulaire
-            setSelectedVariation("");
-            setLibelles([""]);
-        } catch (error) {
-            console.error("Erreur:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="space-y-4 animate-pulse">
-                <div className="h-12 bg-green-100 rounded-xl"></div>
-                <div className="h-10 bg-green-100 rounded-xl"></div>
-                <div className="h-12 bg-green-100 rounded-xl"></div>
-            </div>
-        );
+    try {
+      await addLibelles(selectedVariation, libelles);
+      // reset formulaire : garder select, reset fields
+      setFields([""]);
+    } catch (err) {
+      // error handled in store via toast
+      console.error(err);
     }
+  };
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Sélection de la variation */}
-            <div>
-                <label className="block text-sm font-medium text-green-700 mb-2">
-                    Type de variation *
-                </label>
-                <select
-                    value={selectedVariation}
-                    onChange={(e) => setSelectedVariation(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 border border-green-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-green-50/50 transition-colors"
-                >
-                    <option value="">Choisissez une variation</option>
-                    {variations.map((variation) => (
-                        <option key={variation.hashid} value={variation.hashid}>
-                            {variation.nom_variation}
-                        </option>
-                    ))}
-                </select>
-                <p className="text-green-600 text-xs mt-2">
-                    {variations.length} variation(s) disponible(s)
-                </p>
-            </div>
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div className="sm:col-span-2">
+          <label className="block text-sm font-medium text-green-800 mb-2">Variation</label>
+          <select
+            value={selectedVariation}
+            onChange={(e) => setSelectedVariation(e.target.value)}
+            className="w-full rounded-lg border border-green-100 p-3"
+          >
+            <option value="">-- Choisir une variation --</option>
+            {variations.map((v) => (
+              <option key={v.hashid} value={v.hashid}>
+                {v.nom_variation}
+              </option>
+            ))}
+          </select>
+        </div>
 
-            {/* Champs des libellés */}
-            <div>
-                <div className="flex items-center justify-between mb-3">
-                    <label className="block text-sm font-medium text-green-700">
-                        Libellés *
-                    </label>
-                    <motion.button
-                        type="button"
-                        onClick={ajouterChampLibelle}
-                        className="flex items-center space-x-2 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        <Plus className="w-4 h-4" />
-                        <span>Ajouter un libellé</span>
-                    </motion.button>
-                </div>
-                
-                <div className="space-y-3">
-                    {libelles.map((libelle, index) => (
-                        <motion.div
-                            key={index}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="flex items-center space-x-3"
-                        >
-                            <input
-                                type="text"
-                                value={libelle}
-                                onChange={(e) => modifierLibelle(index, e.target.value)}
-                                placeholder={`Saisissez un libellé (ex: Rouge, XL, etc.)`}
-                                className="flex-1 px-4 py-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-green-50/50 transition-colors"
-                            />
-                            {libelles.length > 1 && (
-                                <motion.button
-                                    type="button"
-                                    onClick={() => supprimerChampLibelle(index)}
-                                    className="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                >
-                                    <X className="w-4 h-4" />
-                                </motion.button>
-                            )}
-                        </motion.div>
-                    ))}
-                </div>
-                <p className="text-green-600 text-sm mt-2">
-                    Ajoutez autant de libellés que nécessaire pour cette variation
-                </p>
-            </div>
+        <div className="flex items-end">
+          <button
+            type="button"
+            onClick={() => {
+              // si aucune variation sélectionnée, forcer le chargement
+              if (!selectedVariation && variations.length > 0) setSelectedVariation(variations[0].hashid);
+              addField();
+            }}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
+            title="Ajouter un champ de libellé"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="text-sm">Ajouter champ</span>
+          </button>
+        </div>
+      </div>
 
-            {/* Bouton de validation */}
-            <motion.button
-                type="submit"
-                disabled={isLoading || !selectedVariation || !libelles.some(lib => lib.trim() !== "")}
-                className={`w-full py-4 rounded-xl flex items-center justify-center space-x-3 transition-colors font-medium ${
-                    selectedVariation && libelles.some(lib => lib.trim() !== "")
-                        ? "bg-green-600 hover:bg-green-700 text-white shadow-md" 
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-                whileHover={selectedVariation && libelles.some(lib => lib.trim() !== "") ? { scale: 1.02 } : {}}
-                whileTap={selectedVariation && libelles.some(lib => lib.trim() !== "") ? { scale: 0.98 } : {}}
+      {/* Champs dynamiques */}
+      <div className="space-y-3 mb-4">
+        {fields.map((value, idx) => (
+          <div key={idx} className="flex gap-2 items-center">
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => handleFieldChange(idx, e.target.value)}
+              placeholder={`Libellé ${idx + 1} (ex: XL, Rouge)`}
+              className="flex-1 p-3 rounded-lg border border-green-100"
+            />
+            <button
+              type="button"
+              onClick={() => removeField(idx)}
+              className="p-2 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100"
+              aria-label="Supprimer champ"
             >
-                <Check className="w-5 h-5" />
-                <span className="text-lg">
-                    {isLoading ? "Ajout en cours..." : "Valider les libellés"}
-                </span>
-            </motion.button>
+              <Trash2 className="w-4 h-4 text-emerald-600" />
+            </button>
+          </div>
+        ))}
+      </div>
 
-            {/* Debug info */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <p className="text-blue-700 text-sm">
-                    <strong>Debug:</strong> {variations.length} variation(s) chargée(s)
-                </p>
-                {variations.length > 0 && (
-                    <ul className="text-blue-600 text-xs mt-2">
-                        {variations.map(v => (
-                            <li key={v.hashid}>- {v.nom_variation} (ID: {v.hashid})</li>
-                        ))}
-                    </ul>
-                )}
-            </div>
-        </form>
-    );
+      <div className="flex items-center gap-3">
+        <button
+          type="submit"
+          disabled={adding}
+          className="px-5 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-medium shadow-sm disabled:opacity-60"
+        >
+          {adding ? "Ajout en cours..." : "Enregistrer les libellés"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setFields([""]);
+          }}
+          className="px-4 py-3 rounded-lg border border-emerald-200 text-emerald-700"
+        >
+          Réinitialiser
+        </button>
+      </div>
+
+      {loading && (
+        <p className="mt-3 text-sm text-emerald-600">Chargement des variations...</p>
+      )}
+    </form>
+  );
 };
 
 export default FormulaireLibelles;
