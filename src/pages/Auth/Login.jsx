@@ -4,8 +4,6 @@ import { ArrowLeft, Store, AlertCircle, HandHeart } from "lucide-react";
 import { useState } from "react";
 import useAuthStore from "../../stores/auth.store";
 import ContainerForms from "./components/ContainerForms";
-
-// Import Firebase (vous devrez installer firebase: npm install firebase)
 import { getFCMToken } from "../../config/firebase";
 
 const Login = () => {
@@ -28,30 +26,20 @@ const Login = () => {
 
         try {
             // Récupérer le token FCM pour le web
-            console.log("🔄 Génération du token FCM...");
             const deviceToken = await getFCMToken();
             
-            if (!deviceToken) {
-                console.warn("⚠️ Token FCM non disponible - notifications désactivées");
-                // Continuer sans notifications
-            } else {
-                console.log("✅ Token FCM obtenu:", deviceToken);
-            }
-
             // Préparer les données avec le device_token
             const loginData = {
                 ...formData,
                 device_token: deviceToken || null
             };
 
-            console.log("🔐 Tentative de connexion avec token FCM");
-
             const res = await loginBoutique(loginData);
-            console.log("🎉 Connexion réussie", res);
+            console.log("Connexion réussie :", res);
 
             navigate("/dashboard");
         } catch (error) {
-            console.error("❌ Erreur lors de la connexion :", error);
+            console.error("Erreur lors de la connexion :", error);
         }
     };
 
