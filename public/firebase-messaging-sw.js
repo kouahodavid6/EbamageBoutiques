@@ -1,56 +1,41 @@
-/* eslint-disable no-undef */
-// public/firebase-messaging-sw.js
-importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
+/* eslint-env serviceworker */
+/* global importScripts, firebase */
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
+// Give the service worker access to Firebase Messaging.
+// Note that you can only use Firebase Messaging here. Other Firebase libraries
+// are not available in the service worker.
+// Replace 10.13.2 with latest version of the Firebase JS SDK.
+importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js');
+
+// Initialize the Firebase app in the service worker by passing in
+// your app's Firebase config object.
+// https://firebase.google.com/docs/web/setup#config-object
+firebase.initializeApp({
     apiKey: "AIzaSyCb1ElYM7XTsIuonc9LOIDc0dDZVb0V8L4",
     authDomain: "ebamagenotificationsboutiques.firebaseapp.com",
     projectId: "ebamagenotificationsboutiques",
     storageBucket: "ebamagenotificationsboutiques.firebasestorage.app",
     messagingSenderId: "62911671539",
-    appId: "1:62911671539:web:3afdc6516e6dde0763db86"
-};
+    appId: "1:62911671539:web:3afdc6516e6dde0763db86",
+    measurementId: "G-GW705099DY"
+});
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-
+// Retrieve an instance of Firebase Messaging so that it can handle background
+// messages.
 const messaging = firebase.messaging();
 
-// Gérer les notifications en background
 messaging.onBackgroundMessage((payload) => {
-    console.log('Notification reçue en background:', payload);
-    
-    const notificationTitle = payload.notification?.title || 'Nouvelle notification';
+    console.log(
+        '[firebase-messaging-sw.js] Received background message ',
+        payload
+    );
+    // Customize notification here
+    const notificationTitle = payload.notification.title;
     const notificationOptions = {
-        body: payload.notification?.body || 'Message important',
-        icon: '/logo.png',
-        badge: '/badge.png',
-        data: payload.data || {}
+        body: payload.notification.body,
+        icon: payload.notification.image,
     };
 
     self.registration.showNotification(notificationTitle, notificationOptions);
-});
-
-// Gérer le clic sur les notifications
-self.addEventListener('notificationclick', (event) => {
-    console.log('Notification cliquée:', event.notification);
-    event.notification.close();
-    
-    // Ouvrir l'application ou une URL spécifique
-    event.waitUntil(
-        clients.matchAll({type: 'window'}).then((windowClients) => {
-            // Vérifier si une fenêtre est déjà ouverte
-            for (let client of windowClients) {
-                if (client.url.includes('/dashboard') && 'focus' in client) {
-                    return client.focus();
-                }
-            }
-            // Sinon ouvrir une nouvelle fenêtre
-            if (clients.openWindow) {
-                return clients.openWindow('/dashboard');
-            }
-        })
-    );
 });

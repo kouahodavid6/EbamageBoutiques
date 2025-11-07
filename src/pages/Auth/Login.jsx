@@ -4,7 +4,6 @@ import { ArrowLeft, Store, AlertCircle, HandHeart } from "lucide-react";
 import { useState } from "react";
 import useAuthStore from "../../stores/auth.store";
 import ContainerForms from "./components/ContainerForms";
-import { getFCMToken } from "../../config/firebase";
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -26,12 +25,12 @@ const Login = () => {
 
         try {
             // Récupérer le token FCM pour le web
-            const deviceToken = await getFCMToken();
+            // const deviceToken = await getFCMToken();
             
             // Préparer les données avec le device_token
             const loginData = {
                 ...formData,
-                device_token: deviceToken || null
+                // device_token: deviceToken || null
             };
 
             const res = await loginBoutique(loginData);

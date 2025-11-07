@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
-import { useState, useEffect } from "react";
-import { Image, X, Plus, ChevronDown, Upload, Package } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Image, X, Plus, ChevronDown, Upload, Package, Crop, RotateCcw, Check } from "lucide-react";
 import useProduitStore from "../../../stores/produit.store";
 import useCategorieStore from "../../../stores/categorie.store";
 //import { getVariationsShop } from "../../../services/libelleVariation.service";
@@ -33,6 +33,12 @@ const RegisterProduitsModal = ({
   const [loadingVariations, setLoadingVariations] = useState(true);
   const [selectedVariations, setSelectedVariations] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // États pour le redimensionnement d'image
+  const [isCropping, setIsCropping] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(null);
+  const [cropScale, setCropScale] = useState(1);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
     fetchCategories();
@@ -137,6 +143,7 @@ const RegisterProduitsModal = ({
     const files = Array.from(e.target.files);
     const validImages = [];
     const tooBigImages = [];
+    
     files.forEach((file) => {
       if (file.size <= MAX_IMAGE_SIZE) {
         validImages.push({ file, url: URL.createObjectURL(file) });
@@ -144,9 +151,11 @@ const RegisterProduitsModal = ({
         tooBigImages.push(file.name);
       }
     });
+    
     if (tooBigImages.length > 0) {
       toast.error(`Certaines images dépassent 2 Mo et n'ont pas été ajoutées`);
     }
+    
     setFormData((prev) => ({
       ...prev,
       images: [...prev.images, ...validImages],
@@ -160,6 +169,101 @@ const RegisterProduitsModal = ({
       URL.revokeObjectURL(removed.url);
     }
     setFormData((prev) => ({ ...prev, images: updated }));
+  };
+
+  // Fonctions pour le redimensionnement d'image
+  const startCropping = (index) => {
+    setCurrentImageIndex(index);
+    setIsCropping(true);
+    setCropScale(1);
+  };
+
+  const cancelCropping = () => {
+    setIsCropping(false);
+    setCurrentImageIndex(null);
+    setCropScale(1);
+  };
+
+  const applyCrop = () => {
+    if (currentImageIndex === null || !canvasRef.current) {
+      toast.error("Erreur lors du redimensionnement");
+      return;
+    }
+
+    try {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      const image = new Image();
+      
+      image.onload = () => {
+        // Dimensions cibles pour le recadrage (carré 500x500)
+        const targetSize = 500;
+        canvas.width = targetSize;
+        canvas.height = targetSize;
+        
+        // Calcul des dimensions basées sur l'échelle
+        const scaledWidth = image.width * cropScale;
+        const scaledHeight = image.height * cropScale;
+        
+        // Centrer l'image redimensionnée
+        const x = (image.width - scaledWidth) / 2;
+        const y = (image.height - scaledHeight) / 2;
+        
+        // Effacer le canvas
+        ctx.clearRect(0, 0, targetSize, targetSize);
+        
+        // Dessiner l'image redimensionnée
+        ctx.drawImage(
+          image,
+          Math.max(0, x), Math.max(0, y), 
+          Math.min(scaledWidth, image.width), 
+          Math.min(scaledHeight, image.height),
+          0, 0, targetSize, targetSize
+        );
+        
+        // Convertir en blob
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            toast.error("Erreur lors de la conversion de l'image");
+            return;
+          }
+
+          const newUrl = URL.createObjectURL(blob);
+          const updatedImages = [...formData.images];
+          updatedImages[currentImageIndex] = {
+            file: new File([blob], `cropped-image-${Date.now()}.jpg`, { type: 'image/jpeg' }),
+            url: newUrl
+          };
+          
+          setFormData(prev => ({ ...prev, images: updatedImages }));
+          setIsCropping(false);
+          setCurrentImageIndex(null);
+          setCropScale(1);
+          toast.success("Image redimensionnée avec succès !");
+        }, 'image/jpeg', 0.9);
+      };
+      
+      image.onerror = () => {
+        toast.error("Erreur lors du chargement de l'image");
+      };
+      
+      image.src = formData.images[currentImageIndex].url;
+    } catch (error) {
+      console.error("Erreur lors du redimensionnement:", error);
+      toast.error("Erreur lors du redimensionnement de l'image");
+    }
+  };
+
+  const handleZoomIn = () => {
+    setCropScale(prev => Math.min(prev + 0.2, 3));
+  };
+
+  const handleZoomOut = () => {
+    setCropScale(prev => Math.max(prev - 0.2, 0.5));
+  };
+
+  const resetCrop = () => {
+    setCropScale(1);
   };
 
   const handleAddVariation = () => {
@@ -201,6 +305,7 @@ const RegisterProduitsModal = ({
           formDataToSend.append("images[]", img.file);
         }
       });
+      
       if (formData.old_price) {
         formDataToSend.append("old_price", formData.old_price);
       }
@@ -214,7 +319,8 @@ const RegisterProduitsModal = ({
       }
       onClose();
     } catch (err) {
-      console.error("Erreur détaillée:", err.response?.data);
+      console.error("Erreur détaillée:", err);
+      toast.error(err.response?.data?.message || "Erreur lors de l'opération");
     } finally {
       setIsSubmitting(false);
     }
@@ -222,358 +328,500 @@ const RegisterProduitsModal = ({
 
   return (
     <AnimatePresence>
-      {(
+      <motion.div
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+      >
         <motion.div
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
-          <motion.div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={onClose}
-            aria-hidden="true"
-            variants={overlayVariants}
-          />
+          className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+          onClick={onClose}
+          aria-hidden="true"
+          variants={overlayVariants}
+        />
 
-          <motion.div
-            className="relative z-[10000] bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-emerald-100"
-            variants={modalVariants}
-          >
-            {/* En-tête */}
-            <div className="flex justify-between items-center p-6 border-b border-emerald-100 bg-white sticky top-0">
-              <div className="flex items-center gap-4">
-                <motion.div
-                  className="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100"
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: 0.1, type: "spring" }}
-                >
-                  <Package className="h-6 w-6 text-emerald-600" />
-                </motion.div>
-                <div>
-                  <h3 className="text-xl font-bold text-emerald-900">
-                    {isEdit ? "Modifier le produit" : "Ajouter un produit"}
-                  </h3>
-                  <p className="text-emerald-600/70 text-sm">
-                    {isEdit ? "Mettez à jour les informations de votre produit" : "Créez un nouveau produit dans votre catalogue"}
-                  </p>
-                </div>
-              </div>
-              <motion.button
-                onClick={onClose}
-                className="p-2 rounded-xl hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 transition-all duration-300"
-                aria-label="Fermer"
-                variants={buttonVariants}
-                whileHover="hover"
-                whileTap="tap"
-              >
-                <X className="h-5 w-5" />
-              </motion.button>
-            </div>
-
-            <motion.form 
-              onSubmit={handleSubmit} 
-              className="space-y-6 p-6"
+        {/* Modal de redimensionnement d'image */}
+        <AnimatePresence>
+          {isCropping && currentImageIndex !== null && (
+            <motion.div
+              className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/90"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
+              exit={{ opacity: 0 }}
             >
-              {/* Nom produit */}
-              <motion.div variants={itemVariants}>
-                <label className="block text-sm font-semibold text-emerald-800 mb-2">
-                  Nom du produit <span className="text-red-500">*</span>
-                </label>
-                <motion.input
-                  type="text"
-                  value={formData.nom_article}
-                  onChange={(e) =>
-                    setFormData({ ...formData, nom_article: e.target.value })
-                  }
-                  required
-                  className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300"
-                  placeholder="Ex: Chaussure Nike Air Max"
-                  whileFocus={{ scale: 1.01 }}
-                />
-              </motion.div>
-
-              {/* Prix et ancien prix */}
-              <motion.div 
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                variants={itemVariants}
-                transition={{ delay: 0.1 }}
+              <motion.div
+                className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+                initial={{ scale: 0.8, y: 50 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.8, y: 50 }}
               >
-                <div>
-                  <label className="block text-sm font-semibold text-emerald-800 mb-2">
-                    Prix actuel <span className="text-red-500">*</span>
-                  </label>
-                  <motion.input
-                    type="number"
-                    value={formData.prix}
-                    onChange={(e) =>
-                      setFormData({ ...formData, prix: e.target.value })
-                    }
-                    required
-                    min="0"
-                    className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300"
-                    placeholder="15000"
-                    whileFocus={{ scale: 1.01 }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-emerald-800 mb-2">
-                    Ancien prix
-                  </label>
-                  <motion.input
-                    type="number"
-                    value={formData.old_price}
-                    onChange={(e) =>
-                      setFormData({ ...formData, old_price: e.target.value })
-                    }
-                    min="0"
-                    className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300"
-                    placeholder="20000"
-                    whileFocus={{ scale: 1.01 }}
-                  />
-                </div>
-              </motion.div>
-
-              {/* Catégorie */}
-              <motion.div variants={itemVariants} transition={{ delay: 0.2 }}>
-                <label className="block text-sm font-semibold text-emerald-800 mb-2">
-                  Catégorie <span className="text-red-500">*</span>
-                </label>
-                {categoriesLoading ? (
-                  <div className="text-emerald-600/70 text-sm p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                    Chargement des catégories...
-                  </div>
-                ) : categoriesError ? (
-                  <div className="text-red-500 text-sm p-3 bg-red-50 rounded-xl border border-red-100">{categoriesError}</div>
-                ) : (
-                  <motion.select
-                    value={formData.categorie}
-                    onChange={(e) =>
-                      setFormData({ ...formData, categorie: e.target.value })
-                    }
-                    required
-                    className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 appearance-none"
-                    whileFocus={{ scale: 1.01 }}
+                <div className="flex justify-between items-center p-4 border-b">
+                  <h3 className="text-lg font-semibold text-emerald-900">
+                    Redimensionner l'image
+                  </h3>
+                  <button
+                    onClick={cancelCropping}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-300"
                   >
-                    <option value="">Sélectionner une catégorie</option>
-                    {categories.map((cat) => (
-                      <option key={cat.hashid} value={cat.hashid}>
-                        {cat.nom_categorie}
-                      </option>
-                    ))}
-                  </motion.select>
-                )}
-              </motion.div>
-
-              {/* Description */}
-              <motion.div variants={itemVariants} transition={{ delay: 0.3 }}>
-                <label className="block text-sm font-semibold text-emerald-800 mb-2">
-                  Description
-                </label>
-                <motion.textarea
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  rows={4}
-                  className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 resize-vertical"
-                  placeholder="Décrivez votre produit en détail..."
-                  whileFocus={{ scale: 1.01 }}
-                />
-              </motion.div>
-              
-              {/* Variations */}
-              <motion.div variants={itemVariants} transition={{ delay: 0.4 }}>
-                <div className="flex justify-between items-center mb-3">
-                  <label className="block text-sm font-semibold text-emerald-800">
-                    Variations du produit
-                  </label>
-                  <motion.button
-                    type="button"
-                    onClick={handleAddVariation}
-                    className="text-sm text-emerald-600 hover:text-emerald-700 flex items-center gap-2 font-medium"
-                    variants={buttonVariants}
-                    whileHover="hover"
-                    whileTap="tap"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Ajouter une variation
-                  </motion.button>
+                    <X className="h-5 w-5" />
+                  </button>
                 </div>
                 
-                {loadingVariations ? (
-                  <div className="text-emerald-600/70 text-sm p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-                    Chargement des variations...
-                  </div>
-                ) : shopVariations.length === 0 ? (
-                  <div className="text-emerald-600/70 text-sm p-4 bg-amber-50 rounded-xl border border-amber-100">
-                    Aucune variation disponible. Veuillez d'abord créer des variations dans l'onglet Variations.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {selectedVariations.length === 0 ? (
-                      <div className="text-emerald-600/70 text-sm p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-                        Cliquez sur "Ajouter une variation" pour sélectionner des variations pour ce produit.
+                <div className="p-6">
+                  {/* Aperçu de l'image avec zoom */}
+                  <div className="relative mb-4 border-2 border-dashed border-emerald-200 rounded-lg overflow-hidden max-h-96 flex items-center justify-center bg-gray-50 p-4">
+                    <div className="relative overflow-hidden rounded-lg">
+                      <img
+                        src={formData.images[currentImageIndex].url}
+                        alt="À redimensionner"
+                        className="max-w-full max-h-80 transition-transform duration-300"
+                        style={{
+                          transform: `scale(${cropScale})`,
+                          transformOrigin: 'center'
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Cadre de recadrage */}
+                    <div className="absolute inset-4 border-2 border-white border-dashed pointer-events-none rounded-lg">
+                      <div className="absolute top-2 left-2 text-white text-sm bg-black/70 px-2 py-1 rounded">
+                        Zoom: {Math.round(cropScale * 100)}%
                       </div>
-                    ) : (
-                      selectedVariations.map((variationId, index) => (
-                        <motion.div 
-                          key={index} 
-                          className="flex items-center gap-3 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100"
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.5 + (index * 0.1) }}
-                        >
-                          <motion.select
-                            value={variationId}
-                            onChange={(e) => handleVariationChange(index, e.target.value)}
-                            className="flex-1 px-4 py-2 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 appearance-none"
-                            whileFocus={{ scale: 1.01 }}
-                          >
-                            <option value="">Sélectionner une variation</option>
-                            {shopVariations.map((variation) => (
-                              <option key={variation.hashid} value={variation.hashid}>
-                                {variation.nom_variation} ({variation.lib_variation.join(", ")})
-                              </option>
-                            ))}
-                          </motion.select>
-                          <div className="relative pointer-events-none">
-                            <ChevronDown className="h-4 w-4 text-emerald-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
-                          </div>
-                          <motion.button
-                            type="button"
-                            onClick={() => handleRemoveVariation(index)}
-                            className="p-2 text-emerald-400 hover:text-red-500 focus:outline-none transition-colors duration-300"
-                            whileHover={{ scale: 1.2 }}
-                            whileTap={{ scale: 0.9 }}
-                          >
-                            <X className="h-5 w-5" />
-                          </motion.button>
-                        </motion.div>
-                      ))
-                    )}
+                    </div>
                   </div>
-                )}
+                  
+                  <canvas ref={canvasRef} className="hidden" />
+                  
+                  {/* Contrôles de zoom */}
+                  <div className="flex flex-wrap gap-3 mb-4 justify-center">
+                    <motion.button
+                      onClick={handleZoomOut}
+                      disabled={cropScale <= 0.5}
+                      className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-300 ${
+                        cropScale <= 0.5 
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                          : "bg-emerald-100 hover:bg-emerald-200 text-emerald-700"
+                      }`}
+                      whileHover={cropScale > 0.5 ? { scale: 1.05 } : {}}
+                      whileTap={cropScale > 0.5 ? { scale: 0.95 } : {}}
+                    >
+                      <Crop className="h-4 w-4" />
+                      Zoom - 
+                    </motion.button>
+                    
+                    <motion.button
+                      onClick={handleZoomIn}
+                      disabled={cropScale >= 3}
+                      className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-300 ${
+                        cropScale >= 3 
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                          : "bg-emerald-100 hover:bg-emerald-200 text-emerald-700"
+                      }`}
+                      whileHover={cropScale < 3 ? { scale: 1.05 } : {}}
+                      whileTap={cropScale < 3 ? { scale: 0.95 } : {}}
+                    >
+                      <Crop className="h-4 w-4" />
+                      Zoom +
+                    </motion.button>
+                    
+                    <motion.button
+                      onClick={resetCrop}
+                      className="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg flex items-center gap-2 transition-colors duration-300"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      Réinitialiser
+                    </motion.button>
+                  </div>
+                  
+                  <div className="text-center text-sm text-gray-600 mb-4">
+                    L'image sera automatiquement recadrée en format carré. Ajustez le zoom pour cadrer votre produit.
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <motion.button
+                      onClick={cancelCropping}
+                      className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors duration-300"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Annuler
+                    </motion.button>
+                    <motion.button
+                      onClick={applyCrop}
+                      className="flex-1 px-6 py-3 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors duration-300"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Check className="h-4 w-4" />
+                      Appliquer
+                    </motion.button>
+                  </div>
+                </div>
               </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-              {/* Images */}
-              <motion.div variants={itemVariants} transition={{ delay: 0.5 }}>
-                <label className="block text-sm font-semibold text-emerald-800 mb-2">
-                  Images du produit{" "}
-                  {!isEdit && <span className="text-red-500">*</span>}
-                </label>
-                <motion.div 
-                  className="border-2 border-dashed border-emerald-200 rounded-xl p-6 text-center hover:border-emerald-400 transition-all duration-300 bg-emerald-50/30 cursor-pointer"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                >
-                  <Upload className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
-                  <p className="text-sm text-emerald-600/80 mb-2">
-                    Glissez vos images ici ou cliquez pour sélectionner
-                  </p>
-                  <p className="text-xs text-emerald-500/60 mb-3">
-                    Taille maximale : 2 Mo par image
-                  </p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    id="product-image"
-                    multiple
-                    onChange={handleImageChange}
-                    required={!isEdit && formData.images.length === 0}
-                  />
-                  <motion.label
-                    htmlFor="product-image"
-                    className="inline-flex items-center px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 cursor-pointer text-sm font-medium transition-all duration-300"
-                    whileHover="hover"
-                    whileTap="tap"
-                  >
-                    <Image className="h-4 w-4 mr-2" />
-                    Parcourir les fichiers
-                  </motion.label>
-                </motion.div>
-
-                {formData.images.length > 0 && (
-                  <motion.div 
-                    className="flex flex-wrap gap-4 mt-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {formData.images.map((img, i) => (
-                      <motion.div
-                        key={i}
-                        className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-emerald-100 shadow-sm"
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <img
-                          src={img.url}
-                          alt={`preview-${i}`}
-                          className="object-cover w-full h-full"
-                        />
-                        <motion.button
-                          type="button"
-                          onClick={() => handleRemoveImage(i)}
-                          className="absolute top-0 right-0 bg-black/70 text-white rounded-bl-lg p-1 hover:bg-red-500 transition-colors duration-300"
-                          whileHover={{ scale: 1.2 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <X className="h-3 w-3" />
-                        </motion.button>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                )}
-              </motion.div>
-
-              {/* Boutons */}
-              <motion.div 
-                className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-emerald-100"
-                variants={itemVariants}
-                transition={{ delay: 0.6 }}
+        {/* Modal principal */}
+        <motion.div
+          className="relative z-[10000] bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-emerald-100"
+          variants={modalVariants}
+        >
+          {/* En-tête */}
+          <div className="flex justify-between items-center p-6 border-b border-emerald-100 bg-white sticky top-0">
+            <div className="flex items-center gap-4">
+              <motion.div
+                className="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100"
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.1, type: "spring" }}
               >
+                <Package className="h-6 w-6 text-emerald-600" />
+              </motion.div>
+              <div>
+                <h3 className="text-xl font-bold text-emerald-900">
+                  {isEdit ? "Modifier le produit" : "Ajouter un produit"}
+                </h3>
+                <p className="text-emerald-600/70 text-sm">
+                  {isEdit ? "Mettez à jour les informations de votre produit" : "Créez un nouveau produit dans votre catalogue"}
+                </p>
+              </div>
+            </div>
+            <motion.button
+              onClick={onClose}
+              className="p-2 rounded-xl hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 transition-all duration-300"
+              aria-label="Fermer"
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              <X className="h-5 w-5" />
+            </motion.button>
+          </div>
+
+          <motion.form 
+            onSubmit={handleSubmit} 
+            className="space-y-6 p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+          >
+            {/* Nom produit */}
+            <motion.div variants={itemVariants}>
+              <label className="block text-sm font-semibold text-emerald-800 mb-2">
+                Nom du produit <span className="text-red-500">*</span>
+              </label>
+              <motion.input
+                type="text"
+                value={formData.nom_article}
+                onChange={(e) =>
+                  setFormData({ ...formData, nom_article: e.target.value })
+                }
+                required
+                className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300"
+                placeholder="Ex: Chaussure Nike Air Max"
+                whileFocus={{ scale: 1.01 }}
+              />
+            </motion.div>
+
+            {/* Prix et ancien prix */}
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              variants={itemVariants}
+              transition={{ delay: 0.1 }}
+            >
+              <div>
+                <label className="block text-sm font-semibold text-emerald-800 mb-2">
+                  Prix actuel <span className="text-red-500">*</span>
+                </label>
+                <motion.input
+                  type="number"
+                  value={formData.prix}
+                  onChange={(e) =>
+                    setFormData({ ...formData, prix: e.target.value })
+                  }
+                  required
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300"
+                  placeholder="15000"
+                  whileFocus={{ scale: 1.01 }}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-emerald-800 mb-2">
+                  Ancien prix
+                </label>
+                <motion.input
+                  type="number"
+                  value={formData.old_price}
+                  onChange={(e) =>
+                    setFormData({ ...formData, old_price: e.target.value })
+                  }
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300"
+                  placeholder="20000"
+                  whileFocus={{ scale: 1.01 }}
+                />
+              </div>
+            </motion.div>
+
+            {/* Catégorie */}
+            <motion.div variants={itemVariants} transition={{ delay: 0.2 }}>
+              <label className="block text-sm font-semibold text-emerald-800 mb-2">
+                Catégorie <span className="text-red-500">*</span>
+              </label>
+              {categoriesLoading ? (
+                <div className="text-emerald-600/70 text-sm p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                  Chargement des catégories...
+                </div>
+              ) : categoriesError ? (
+                <div className="text-red-500 text-sm p-3 bg-red-50 rounded-xl border border-red-100">
+                  {categoriesError}
+                </div>
+              ) : (
+                <motion.select
+                  value={formData.categorie}
+                  onChange={(e) =>
+                    setFormData({ ...formData, categorie: e.target.value })
+                  }
+                  required
+                  className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 appearance-none bg-white"
+                  whileFocus={{ scale: 1.01 }}
+                >
+                  <option value="">Sélectionner une catégorie</option>
+                  {categories.map((cat) => (
+                    <option key={cat.hashid} value={cat.hashid}>
+                      {cat.nom_categorie}
+                    </option>
+                  ))}
+                </motion.select>
+              )}
+            </motion.div>
+
+            {/* Description */}
+            <motion.div variants={itemVariants} transition={{ delay: 0.3 }}>
+              <label className="block text-sm font-semibold text-emerald-800 mb-2">
+                Description
+              </label>
+              <motion.textarea
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                rows={4}
+                className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 resize-vertical"
+                placeholder="Décrivez votre produit en détail..."
+                whileFocus={{ scale: 1.01 }}
+              />
+            </motion.div>
+            
+            {/* Variations */}
+            <motion.div variants={itemVariants} transition={{ delay: 0.4 }}>
+              <div className="flex justify-between items-center mb-3">
+                <label className="block text-sm font-semibold text-emerald-800">
+                  Variations du produit
+                </label>
                 <motion.button
                   type="button"
-                  onClick={onClose}
-                  className="flex-1 px-6 py-3 text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all duration-300 font-medium"
+                  onClick={handleAddVariation}
+                  className="text-sm text-emerald-600 hover:text-emerald-700 flex items-center gap-2 font-medium transition-colors duration-300"
                   variants={buttonVariants}
                   whileHover="hover"
                   whileTap="tap"
                 >
-                  Annuler
+                  <Plus className="h-4 w-4" />
+                  Ajouter une variation
                 </motion.button>
-                <motion.button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`flex-1 px-6 py-3 text-white rounded-xl font-medium transition-all duration-300 ${
-                    isSubmitting
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 shadow-lg hover:shadow-emerald-200/50"
-                  }`}
-                  variants={buttonVariants}
-                  whileHover={!isSubmitting ? "hover" : {}}
-                  whileTap={!isSubmitting ? "tap" : {}}
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-                      {isEdit ? "Modification..." : "Ajout..."}
+              </div>
+              
+              {loadingVariations ? (
+                <div className="text-emerald-600/70 text-sm p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+                  Chargement des variations...
+                </div>
+              ) : shopVariations.length === 0 ? (
+                <div className="text-emerald-600/70 text-sm p-4 bg-amber-50 rounded-xl border border-amber-100">
+                  Aucune variation disponible. Veuillez d'abord créer des variations dans l'onglet Variations.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {selectedVariations.length === 0 ? (
+                    <div className="text-emerald-600/70 text-sm p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+                      Cliquez sur "Ajouter une variation" pour sélectionner des variations pour ce produit.
                     </div>
                   ) : (
-                    isEdit ? "Modifier le produit" : "Ajouter le produit"
+                    selectedVariations.map((variationId, index) => (
+                      <motion.div 
+                        key={index} 
+                        className="flex items-center gap-3 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 + (index * 0.1) }}
+                      >
+                        <motion.select
+                          value={variationId}
+                          onChange={(e) => handleVariationChange(index, e.target.value)}
+                          className="flex-1 px-4 py-2 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 appearance-none bg-white"
+                          whileFocus={{ scale: 1.01 }}
+                        >
+                          <option value="">Sélectionner une variation</option>
+                          {shopVariations.map((variation) => (
+                            <option key={variation.hashid} value={variation.hashid}>
+                              {variation.nom_variation} ({variation.lib_variation?.join(", ") || "Aucun libellé"})
+                            </option>
+                          ))}
+                        </motion.select>
+                        <div className="relative pointer-events-none">
+                          <ChevronDown className="h-4 w-4 text-emerald-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
+                        </div>
+                        <motion.button
+                          type="button"
+                          onClick={() => handleRemoveVariation(index)}
+                          className="p-2 text-emerald-400 hover:text-red-500 transition-colors duration-300"
+                          whileHover={{ scale: 1.2 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          <X className="h-5 w-5" />
+                        </motion.button>
+                      </motion.div>
+                    ))
                   )}
-                </motion.button>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Images avec option de redimensionnement */}
+            <motion.div variants={itemVariants} transition={{ delay: 0.5 }}>
+              <label className="block text-sm font-semibold text-emerald-800 mb-2">
+                Images du produit{" "}
+                {!isEdit && <span className="text-red-500">*</span>}
+              </label>
+              <motion.div 
+                className="border-2 border-dashed border-emerald-200 rounded-xl p-6 text-center hover:border-emerald-400 transition-all duration-300 bg-emerald-50/30 cursor-pointer"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+              >
+                <Upload className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
+                <p className="text-sm text-emerald-600/80 mb-2">
+                  Glissez vos images ici ou cliquez pour sélectionner
+                </p>
+                <p className="text-xs text-emerald-500/60 mb-3">
+                  Taille maximale : 2 Mo par image
+                </p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  id="product-image"
+                  multiple
+                  onChange={handleImageChange}
+                  required={!isEdit && formData.images.length === 0}
+                />
+                <motion.label
+                  htmlFor="product-image"
+                  className="inline-flex items-center px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 cursor-pointer text-sm font-medium transition-all duration-300"
+                  whileHover="hover"
+                  whileTap="tap"
+                >
+                  <Image className="h-4 w-4 mr-2" />
+                  Parcourir les fichiers
+                </motion.label>
               </motion.div>
-            </motion.form>
-          </motion.div>
+
+              {formData.images.length > 0 && (
+                <motion.div 
+                  className="flex flex-wrap gap-4 mt-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {formData.images.map((img, i) => (
+                    <motion.div
+                      key={i}
+                      className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-emerald-100 shadow-sm group"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <img
+                        src={img.url}
+                        alt={`Preview ${i + 1}`}
+                        className="object-cover w-full h-full"
+                      />
+                      
+                      {/* Overlay avec boutons d'action */}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-1">
+                        <motion.button
+                          type="button"
+                          onClick={() => startCropping(i)}
+                          className="p-1 bg-white/90 text-emerald-600 rounded-lg hover:bg-white transition-colors duration-300"
+                          whileHover={{ scale: 1.2 }}
+                          whileTap={{ scale: 0.9 }}
+                          title="Redimensionner"
+                        >
+                          <Crop className="h-3 w-3" />
+                        </motion.button>
+                        <motion.button
+                          type="button"
+                          onClick={() => handleRemoveImage(i)}
+                          className="p-1 bg-white/90 text-red-500 rounded-lg hover:bg-white transition-colors duration-300"
+                          whileHover={{ scale: 1.2 }}
+                          whileTap={{ scale: 0.9 }}
+                          title="Supprimer"
+                        >
+                          <X className="h-3 w-3" />
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+
+            {/* Boutons */}
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-emerald-100"
+              variants={itemVariants}
+              transition={{ delay: 0.6 }}
+            >
+              <motion.button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-6 py-3 text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all duration-300 font-medium"
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+              >
+                Annuler
+              </motion.button>
+              <motion.button
+                type="submit"
+                disabled={isSubmitting}
+                className={`flex-1 px-6 py-3 text-white rounded-xl font-medium transition-all duration-300 ${
+                  isSubmitting
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 shadow-lg hover:shadow-emerald-200/50"
+                }`}
+                variants={buttonVariants}
+                whileHover={!isSubmitting ? "hover" : {}}
+                whileTap={!isSubmitting ? "tap" : {}}
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                    {isEdit ? "Modification..." : "Ajout..."}
+                  </div>
+                ) : (
+                  isEdit ? "Modifier le produit" : "Ajouter le produit"
+                )}
+              </motion.button>
+            </motion.div>
+          </motion.form>
         </motion.div>
-      )}
+      </motion.div>
     </AnimatePresence>
   );
 };

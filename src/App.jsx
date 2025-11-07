@@ -2,6 +2,7 @@ import { Toaster } from 'react-hot-toast';
 import { CheckCircle, XCircle } from "lucide-react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useEffect } from 'react';
 
 import Home from './pages/Home/Home'
 
@@ -17,7 +18,18 @@ import Notifications from './pages/notifications/Notifications';
 
 import NotFound from './components/NotFound';
 
+import { generateToken, messaging } from './notifications/firebase';
+import { onMessage } from 'firebase/messaging';
+
 function App() {
+  useEffect(() => {
+    generateToken();
+
+    onMessage(messaging, (payload) => {
+      console.log('Message en foreground:', payload);
+    });
+  }, []);
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
