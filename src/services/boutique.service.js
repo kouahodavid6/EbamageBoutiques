@@ -5,7 +5,7 @@ const getSoldeBoutique = async () => {
         const response = await axiosInstance.get('/api/solde/boutique');
         return response.data;
     } catch (error) {
-        throw new Error(error.response?.data?.message || 'Erreur lors de la récupération du solde boutique');
+        throw new Error(error.response?.message || 'Erreur lors de la récupération du solde boutique');
     }
 }
 
