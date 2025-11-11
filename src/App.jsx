@@ -27,6 +27,7 @@ function App() {
 
     onMessage(messaging, (payload) => {
       console.log('Message en foreground:', payload);
+      // toast(payload.notification.body);
     });
   }, []);
 

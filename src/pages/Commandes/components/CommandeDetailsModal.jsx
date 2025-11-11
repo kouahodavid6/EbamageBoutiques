@@ -10,18 +10,18 @@ import {
   X,
   Calendar,
   ShoppingBag,
+  Store,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 
-const CommandeDetailsModal = ({ commande, onClose }) => {
-  if (!commande) return null;
+const CommandeDetailsModal = ({ commande, isOpen, onClose }) => {
+  if (!commande || !isOpen) return null;
 
   // Badges statut
   const getStatusBadge = (status) => {
-    const baseClasses =
-      "px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1";
+    const baseClasses = "px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1";
 
     switch (status) {
       case "En attente":
@@ -31,7 +31,7 @@ const CommandeDetailsModal = ({ commande, onClose }) => {
           </span>
         );
       case "Validée":
-      case "Livrée":
+      case "Confirmée":
         return (
           <span className={`bg-emerald-100 text-emerald-800 ${baseClasses}`}>
             <CheckCircle className="w-3 h-3" /> {status}
@@ -61,8 +61,12 @@ const CommandeDetailsModal = ({ commande, onClose }) => {
 
   // Formatage date
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return format(date, "dd MMM yyyy HH:mm", { locale: fr });
+    try {
+      const date = new Date(dateString);
+      return format(date, "dd MMM yyyy HH:mm", { locale: fr });
+    } catch (e) {
+      return "Date invalide";
+    }
   };
 
   // Variants motion
@@ -86,6 +90,7 @@ const CommandeDetailsModal = ({ commande, onClose }) => {
         className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
         initial="hidden"
         animate="visible"
+        exit="hidden"
       >
         {/* Backdrop */}
         <motion.div
@@ -99,6 +104,7 @@ const CommandeDetailsModal = ({ commande, onClose }) => {
         <motion.div
           className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-emerald-100/20 relative z-50"
           variants={modalVariants}
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="p-4 sm:p-6 lg:p-8">
             {/* En-tête */}
@@ -127,11 +133,14 @@ const CommandeDetailsModal = ({ commande, onClose }) => {
             {/* Identifiants commande */}
             <div className="flex flex-wrap gap-2 mb-6">
               <span className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-sm font-medium border border-emerald-200">
-                #{commande.hashid}
+                #{commande.hashid.substring(0, 8).toUpperCase()}
               </span>
               <span className="bg-emerald-50/50 text-emerald-600 px-3 py-1.5 rounded-full text-sm border border-emerald-100 flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 {formatDate(commande.created_at)}
+              </span>
+              <span className="bg-emerald-50/50 text-emerald-600 px-3 py-1.5 rounded-full text-sm border border-emerald-100">
+                Code: {commande.code_commande}
               </span>
               {getStatusBadge(commande.statut)}
             </div>
@@ -144,13 +153,7 @@ const CommandeDetailsModal = ({ commande, onClose }) => {
                   <h3 className="font-semibold text-emerald-900 mb-4 flex items-center gap-2">
                     <User className="w-5 h-5 text-emerald-600" /> Informations client
                   </h3>
-                  <p className="text-emerald-900">{commande.client.nom_clt}</p>
-                  <p className="text-emerald-700 text-sm">
-                    {commande.client.email_clt}
-                  </p>
-                  <p className="text-emerald-700 text-sm">
-                    {commande.client.tel_clt}
-                  </p>
+                  <p className="text-emerald-900 font-medium">{commande.client.nom_clt}</p>
                 </div>
 
                 {/* Articles */}
@@ -171,10 +174,13 @@ const CommandeDetailsModal = ({ commande, onClose }) => {
                           className="w-20 h-20 rounded-lg object-cover border border-emerald-200"
                         />
                         <div className="flex-1">
-                          <h4 className="font-semibold text-emerald-900">
-                            {article.nom_article}
-                          </h4>
-                          <p className="text-sm text-emerald-600/80">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold text-emerald-900">
+                              {article.nom_article}
+                            </h4>
+                            {getStatusBadge(article.statut_sous_commande || 'En attente')}
+                          </div>
+                          <p className="text-sm text-emerald-600/80 mb-2">
                             {article.description}
                           </p>
                           <p className="text-emerald-700 font-medium">
@@ -193,6 +199,11 @@ const CommandeDetailsModal = ({ commande, onClose }) => {
                               ))}
                             </div>
                           )}
+                          {/* Boutique */}
+                          <div className="mt-2 flex items-center gap-2 text-sm text-emerald-600">
+                            <Store className="w-4 h-4" />
+                            <span>{article.boutique?.nom_btq}</span>
+                          </div>
                         </div>
                         <div className="text-right font-bold text-emerald-900">
                           {(article.prix * article.quantite).toLocaleString(
@@ -255,6 +266,25 @@ const CommandeDetailsModal = ({ commande, onClose }) => {
                     {commande.localisation.commune},{" "}
                     {commande.localisation.ville}
                   </p>
+                </div>
+
+                {/* Dates */}
+                <div className="bg-emerald-50/30 p-6 rounded-xl border border-emerald-100">
+                  <h3 className="font-semibold text-emerald-900 mb-2 flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-emerald-600" /> Dates
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <p className="text-emerald-600/70 text-xs">Créée le</p>
+                      <p className="text-emerald-900">{formatDate(commande.created_at)}</p>
+                    </div>
+                    {commande.updated_at !== commande.created_at && (
+                      <div>
+                        <p className="text-emerald-600/70 text-xs">Modifiée le</p>
+                        <p className="text-emerald-900">{formatDate(commande.updated_at)}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

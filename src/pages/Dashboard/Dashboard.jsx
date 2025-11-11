@@ -1,16 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Plus, ShoppingCart, TrendingUp, Package, Users, Store } from "lucide-react";
-
+import { Plus, ShoppingCart, TrendingUp, Package, Users, Store, DollarSign, AlertCircle, CheckCircle } from "lucide-react";
 import DashboardSidebar from "../../pages/components/DashboardSidebar"
 import DashboardHeader from "../../pages/components/DashboardHeader";
 import { motion } from "framer-motion";
+import { useBoutiqueStore } from "../../stores/boutique.store";
 
-/* ------------------------------------------------------------- */
 const Dashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    /* ============================================================= */
+    // Store Zustand
+    const {
+        soldeBoutique,
+        loading,
+        error,
+        success,
+        fetchSoldeBoutique,
+        clearMessages
+    } = useBoutiqueStore();
+
+    // Chargement initial
+    useEffect(() => {
+        fetchSoldeBoutique();
+    }, []);
+
+    // Clear messages après 5 secondes
+    useEffect(() => {
+        if (error || success) {
+            const timer = setTimeout(() => {
+                clearMessages();
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [error, success]);
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50/20 flex flex-col md:flex-row">
 
@@ -28,7 +51,6 @@ const Dashboard = () => {
                     ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
                     md:translate-x-0 w-64 h-screen`}
             >
-                {/* Croix mobile */}
                 <div className="md:hidden flex justify-end p-4 absolute top-0 right-0 z-50">
                     <button
                         onClick={() => setSidebarOpen(false)}
@@ -55,6 +77,29 @@ const Dashboard = () => {
                 />
 
                 <main className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
+                    {/* Messages d'alerte */}
+                    {error && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6"
+                        >
+                            <AlertCircle className="w-5 h-5" />
+                            {error}
+                        </motion.div>
+                    )}
+
+                    {success && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6"
+                        >
+                            <CheckCircle className="w-5 h-5" />
+                            {success}
+                        </motion.div>
+                    )}
+
                     {/* Section de bienvenue */}
                     <motion.div 
                         className="mb-8"
@@ -72,11 +117,37 @@ const Dashboard = () => {
 
                     {/* Cartes de statistiques */}
                     <motion.div 
-                        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2, duration: 0.6 }}
                     >
+                        {/* Carte Solde Boutique */}
+                        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-emerald-100 shadow-lg hover:shadow-xl transition-all duration-300">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-sm font-semibold text-gray-600">Solde Boutique</h3>
+                                <div className="bg-emerald-100 p-2 rounded-lg">
+                                    <DollarSign className="w-4 h-4 text-emerald-600" />
+                                </div>
+                            </div>
+                            {loading ? (
+                                <div className="animate-pulse">
+                                    <div className="h-8 bg-emerald-200 rounded mb-2"></div>
+                                    <div className="h-4 bg-emerald-100 rounded w-20"></div>
+                                </div>
+                            ) : (
+                                <>
+                                    <p className="text-3xl font-bold text-gray-800">
+                                        {soldeBoutique?.toLocaleString('fr-FR')} FCFA
+                                    </p>
+                                    <div className="flex items-center mt-2">
+                                        <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                                        <span className="text-xs text-gray-600">Solde disponible</span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        
                         <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-sm font-semibold text-gray-600">Produits actifs</h3>
@@ -202,27 +273,6 @@ const Dashboard = () => {
                     </motion.div>
                 </main>
             </div>
-
-            {/* Modaux */}
-            {/* <DeleteConfirmModal
-                isOpen={showDeleteModal}
-                onConfirm={confirmDelete}
-                onCancel={() => {
-                setShowDeleteModal(false);
-                setSelectedRecrue(null);
-                }}
-                entityName={`${selectedRecrue?.nom ?? ""} ${selectedRecrue?.prenom ?? ""}`}
-            /> */}
-
-            {/* <EditRecrueModal
-                isOpen={showEditModal}
-                onClose={() => {
-                setShowEditModal(false);
-                setSelectedRecrue(null);
-                }}
-                initialData={selectedRecrue}
-                onSubmit={confirmEdit}
-            /> */}
         </div>
     );
 };

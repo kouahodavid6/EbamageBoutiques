@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import DashboardSidebar from "../../pages/components/DashboardSidebar"
+import DashboardSidebar from "../../pages/components/DashboardSidebar";
 import DashboardHeader from "../../pages/components/DashboardHeader";
 import {
     Search,
@@ -13,29 +13,64 @@ import {
     CheckCircle,
     XCircle,
     Truck,
+    Eye,
+    DollarSign,
 } from "lucide-react";
 import useCommandeStore from "../../stores/commande.store";
-import { format } from "date-fns";
+import { useBoutiqueStore } from "../../stores/boutique.store";
+import { format, differenceInDays } from "date-fns";
 import fr from "date-fns/locale/fr";
 import CommandeDetailsModal from "./components/CommandeDetailsModal";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Commandes = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCommande, setSelectedCommande] = useState(null);
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    const [localFilters, setLocalFilters] = useState({
+        statut: '',
+        localisation: ''
+    });
 
-    const { commandes = [], loading, error, fetchCommandes } = useCommandeStore();
+    const { commandes = [], loading, error, fetchCommandes, markDuAsReclame } = useCommandeStore();
+    const { reclamerDu, loading: loadingReclamation } = useBoutiqueStore();
 
     useEffect(() => {
         fetchCommandes();
     }, [fetchCommandes]);
 
-    // 🔎 Filtrage
-    const filteredCommandes = (commandes || []).filter((commande) => {
+    // Fonction pour vérifier si on peut réclamer le dû (3 jours après livraison)
+    const canReclamerDu = (commande) => {
+        if (commande.statut !== 'Livrée' && commande.statut !== 'Livré') return false;
+        
+        // Utiliser la date de mise à jour si la commande est livrée
+        const dateLivraison = new Date(commande.updated_at);
+        const aujourdHui = new Date();
+        const joursEcoules = differenceInDays(aujourdHui, dateLivraison);
+        
+        return joursEcoules >= 3 && !commande.du_reclame;
+    };
+
+    // Fonction pour gérer la réclamation du dû
+    const handleReclamerDu = async (commande, e) => {
+        e.stopPropagation(); // Empêcher l'ouverture de la modal
+        try {
+            await reclamerDu(commande.hashid);
+            
+            // Marquer la commande comme ayant réclamé son dû
+            markDuAsReclame(commande.hashid);
+            
+        } catch (error) {
+            console.error('Erreur lors de la réclamation:', error);
+        }
+    };
+
+    // 🔎 Filtrage combiné (recherche + filtres)
+    const filteredCommandes = commandes.filter((commande) => {
         try {
             const searchLower = searchTerm.toLowerCase();
-            return (
+            const matchesSearch = 
                 commande?.client?.nom_clt?.toLowerCase()?.includes(searchLower) ||
                 commande?.articles?.some(
                     (article) =>
@@ -44,8 +79,16 @@ const Commandes = () => {
                 ) ||
                 commande?.localisation?.commune?.toLowerCase()?.includes(searchLower) ||
                 commande?.localisation?.quartier?.toLowerCase()?.includes(searchLower) ||
-                commande?.statut?.toLowerCase()?.includes(searchLower)
-            );
+                commande?.statut?.toLowerCase()?.includes(searchLower) ||
+                commande?.code_commande?.toLowerCase()?.includes(searchLower);
+
+            // Filtres supplémentaires
+            const matchesStatut = !localFilters.statut || commande.statut === localFilters.statut;
+            const matchesLocalisation = !localFilters.localisation || 
+                (commande.localisation?.commune?.toLowerCase().includes(localFilters.localisation.toLowerCase()) ||
+                 commande.localisation?.ville?.toLowerCase().includes(localFilters.localisation.toLowerCase()));
+
+            return matchesSearch && matchesStatut && matchesLocalisation;
         } catch (e) {
             console.error("Erreur de filtrage", e);
             return false;
@@ -53,39 +96,43 @@ const Commandes = () => {
     });
 
     // 📦 Skeleton loader
-    const skeletonCount = commandes?.length > 0 ? commandes.length : 2;
+    const skeletonCount = 3;
 
     // 🏷️ Badges de statut
     const getStatusBadge = (status) => {
-        const baseClasses =
-            "px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1";
+        const baseClasses = "px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1";
         switch (status) {
             case "En attente":
                 return (
-                    <span
-                        className={`bg-amber-100 text-amber-800 ${baseClasses}`}
-                    >
+                    <span className={`bg-amber-100 text-amber-800 ${baseClasses}`}>
                         <Clock className="w-3 h-3" /> {status}
                     </span>
                 );
             case "Livré":
+            case "Livrée":
                 return (
-                    <span
-                        className={`bg-emerald-100 text-emerald-800 ${baseClasses}`}
-                    >
+                    <span className={`bg-emerald-100 text-emerald-800 ${baseClasses}`}>
                         <CheckCircle className="w-3 h-3" /> {status}
                     </span>
                 );
             case "Annulé":
+            case "Annulée":
                 return (
                     <span className={`bg-red-100 text-red-800 ${baseClasses}`}>
                         <XCircle className="w-3 h-3" /> {status}
                     </span>
                 );
             case "En cours":
+            case "En livraison":
                 return (
                     <span className={`bg-blue-100 text-blue-800 ${baseClasses}`}>
                         <Truck className="w-3 h-3" /> {status}
+                    </span>
+                );
+            case "Confirmée":
+                return (
+                    <span className={`bg-green-100 text-green-800 ${baseClasses}`}>
+                        <CheckCircle className="w-3 h-3" /> {status}
                     </span>
                 );
             default:
@@ -98,9 +145,32 @@ const Commandes = () => {
     };
 
     const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return format(date, "dd MMM yyyy HH:mm", { locale: fr });
+        try {
+            const date = new Date(dateString);
+            return format(date, "dd MMM yyyy HH:mm", { locale: fr });
+        } catch (e) {
+            return "Date invalide";
+        }
     };
+
+    // Options de statut pour le filtre
+    const statutOptions = [
+        { value: '', label: 'Tous les statuts' },
+        { value: 'En attente', label: 'En attente' },
+        { value: 'Confirmée', label: 'Confirmée' },
+        { value: 'En livraison', label: 'En livraison' },
+        { value: 'Livrée', label: 'Livrée' },
+        { value: 'Annulée', label: 'Annulée' }
+    ];
+
+    // Réinitialiser les filtres
+    const handleReinitialiserFiltres = () => {
+        setLocalFilters({ statut: '', localisation: '' });
+        setSearchTerm('');
+    };
+
+    // Vérifier si des filtres sont actifs
+    const hasActiveFilters = localFilters.statut || localFilters.localisation || searchTerm;
 
     // 🎬 Animations
     const containerVariants = {
@@ -140,6 +210,12 @@ const Commandes = () => {
                 <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-2xl text-center max-w-md">
                     <p className="font-semibold mb-2">Erreur de chargement</p>
                     <p className="text-sm">{error}</p>
+                    <button 
+                        onClick={fetchCommandes}
+                        className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                        Réessayer
+                    </button>
                 </div>
             </motion.div>
         );
@@ -180,10 +256,10 @@ const Commandes = () => {
                     >
                         <div>
                             <h1 className="text-2xl md:text-3xl font-bold text-emerald-900 mb-2">
-                                Gestion des commandes
+                                Commandes de la boutique
                             </h1>
                             <p className="text-emerald-600/80">
-                                Suivez et gérez toutes les commandes clients
+                                Visualisez toutes les commandes passées dans votre boutique
                             </p>
                         </div>
                         {!loading && (
@@ -202,7 +278,7 @@ const Commandes = () => {
                         )}
                     </motion.div>
 
-                    {/* Barre de recherche */}
+                    {/* Barre de recherche et filtres */}
                     <motion.div
                         className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100/60 p-6"
                         initial={{ opacity: 0 }}
@@ -216,7 +292,7 @@ const Commandes = () => {
                                 </div>
                                 <motion.input
                                     type="text"
-                                    placeholder="Rechercher par client, article, boutique ou statut..."
+                                    placeholder="Rechercher par client, article, code commande ou statut..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="block w-full pl-10 pr-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 bg-white/50"
@@ -224,6 +300,7 @@ const Commandes = () => {
                                 />
                             </div>
                             <motion.button
+                                onClick={() => setFiltersOpen(!filtersOpen)}
                                 className="flex-shrink-0 flex items-center justify-center gap-2 px-6 py-3 border border-emerald-300 rounded-xl hover:bg-emerald-50 transition-all duration-300 whitespace-nowrap font-medium text-emerald-700"
                                 style={{ height: "48px" }}
                                 variants={buttonVariants}
@@ -232,8 +309,72 @@ const Commandes = () => {
                             >
                                 <Filter className="w-5 h-5" />
                                 <span>Filtres</span>
+                                {hasActiveFilters && (
+                                    <span className="bg-emerald-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                        !
+                                    </span>
+                                )}
                             </motion.button>
                         </div>
+
+                        {/* Panneau des filtres */}
+                        <AnimatePresence>
+                            {filtersOpen && (
+                                <motion.div
+                                    className="mt-4 p-4 bg-emerald-50/50 border border-emerald-200 rounded-xl"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+                                        {/* Filtre par statut */}
+                                        <div className="flex-1 min-w-0">
+                                            <label className="block text-sm font-medium text-emerald-700 mb-2">
+                                                Statut de la commande
+                                            </label>
+                                            <select
+                                                value={localFilters.statut}
+                                                onChange={(e) => setLocalFilters(prev => ({ ...prev, statut: e.target.value }))}
+                                                className="w-full px-3 py-2 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 bg-white"
+                                            >
+                                                {statutOptions.map(option => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        {/* Filtre par localisation */}
+                                        <div className="flex-1 min-w-0">
+                                            <label className="block text-sm font-medium text-emerald-700 mb-2">
+                                                Localisation (ville/commune)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                placeholder="Ex: Abobo, Abidjan..."
+                                                value={localFilters.localisation}
+                                                onChange={(e) => setLocalFilters(prev => ({ ...prev, localisation: e.target.value }))}
+                                                className="w-full px-3 py-2 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 bg-white"
+                                            />
+                                        </div>
+
+                                        {/* Bouton réinitialiser */}
+                                        <motion.button
+                                            onClick={handleReinitialiserFiltres}
+                                            disabled={!hasActiveFilters}
+                                            className="flex-shrink-0 flex items-center gap-2 px-4 py-2 text-emerald-600 hover:text-emerald-700 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
+                                            variants={buttonVariants}
+                                            whileHover={hasActiveFilters ? "hover" : {}}
+                                            whileTap={hasActiveFilters ? "tap" : {}}
+                                        >
+                                            Réinitialiser
+                                        </motion.button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </motion.div>
 
                     {/* Liste commandes */}
@@ -253,8 +394,24 @@ const Commandes = () => {
                                         className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100/60 p-6 animate-pulse"
                                         variants={itemVariants}
                                     >
-                                        <div className="h-4 bg-emerald-200 rounded w-40 mb-2" />
-                                        <div className="h-3 bg-emerald-100 rounded w-28" />
+                                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                                            <div className="flex items-center space-x-4">
+                                                <div className="w-12 h-12 bg-emerald-200 rounded-xl" />
+                                                <div className="space-y-2">
+                                                    <div className="h-4 bg-emerald-200 rounded w-40" />
+                                                    <div className="h-3 bg-emerald-100 rounded w-28" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2 w-32">
+                                                <div className="h-5 bg-emerald-200 rounded" />
+                                                <div className="h-4 bg-emerald-100 rounded" />
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 pt-4 border-t border-emerald-100 flex gap-4">
+                                            <div className="h-4 bg-emerald-100 rounded w-24" />
+                                            <div className="h-4 bg-emerald-100 rounded w-24" />
+                                            <div className="h-4 bg-emerald-100 rounded w-24" />
+                                        </div>
                                     </motion.div>
                                 ))
                         ) : filteredCommandes.length === 0 ? (
@@ -265,24 +422,33 @@ const Commandes = () => {
                             >
                                 <Package className="w-16 h-16 text-emerald-300 mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold text-emerald-900 mb-2">
-                                    {searchTerm
+                                    {hasActiveFilters
                                         ? "Aucune commande trouvée"
                                         : "Aucune commande disponible"}
                                 </h3>
                                 <p className="text-emerald-600/70">
-                                    {searchTerm
+                                    {hasActiveFilters
                                         ? "Essayez de modifier vos critères de recherche"
                                         : "Les commandes apparaîtront ici une fois passées"}
                                 </p>
+                                {hasActiveFilters && (
+                                    <motion.button
+                                        onClick={handleReinitialiserFiltres}
+                                        className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        Réinitialiser les filtres
+                                    </motion.button>
+                                )}
                             </motion.div>
                         ) : (
                             filteredCommandes.map((commande) => (
                                 <motion.div
                                     key={commande.hashid}
-                                    className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100/60 overflow-hidden cursor-pointer group"
+                                    className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100/60 overflow-hidden group"
                                     variants={itemVariants}
                                     whileHover="hover"
-                                    onClick={() => setSelectedCommande(commande)}
                                 >
                                     <div className="p-6">
                                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -299,8 +465,7 @@ const Commandes = () => {
                                                 </motion.div>
                                                 <div>
                                                     <h3 className="font-semibold text-emerald-900 text-lg">
-                                                        Commande #
-                                                        {commande.hashid.substring(0, 8)}
+                                                        Commande {commande.code_commande}
                                                     </h3>
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <User className="w-4 h-4 text-emerald-500" />
@@ -312,10 +477,7 @@ const Commandes = () => {
                                             </div>
                                             <div className="flex flex-col lg:items-end gap-3">
                                                 <div className="text-xl font-bold text-emerald-900">
-                                                    {commande.prix_total_commande?.toLocaleString(
-                                                        "fr-FR"
-                                                    )}{" "}
-                                                    FCFA
+                                                    {commande.prix_total_commande?.toLocaleString("fr-FR")} FCFA
                                                 </div>
                                                 {getStatusBadge(commande.statut)}
                                             </div>
@@ -326,8 +488,7 @@ const Commandes = () => {
                                                 <div className="flex items-center gap-2">
                                                     <Store className="w-4 h-4 text-emerald-500" />
                                                     <span>
-                                                        {commande.articles[0]?.boutique?.nom_btq ||
-                                                            "Boutique inconnue"}
+                                                        {commande.articles?.[0]?.boutique?.nom_btq || "Boutique inconnue"}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
@@ -347,6 +508,44 @@ const Commandes = () => {
                                                         {formatDate(commande.created_at)}
                                                     </span>
                                                 </div>
+                                            </div>
+
+                                            {/* Actions */}
+                                            <div className="mt-4 flex flex-wrap gap-3">
+                                                {/* Bouton Voir détail */}
+                                                <motion.button
+                                                    onClick={() => setSelectedCommande(commande)}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200"
+                                                    variants={buttonVariants}
+                                                    whileHover="hover"
+                                                    whileTap="tap"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                    Voir détail
+                                                </motion.button>
+
+                                                {/* Bouton Réclamer son dû (conditionnel) */}
+                                                {canReclamerDu(commande) && (
+                                                    <motion.button
+                                                        onClick={(e) => handleReclamerDu(commande, e)}
+                                                        disabled={loadingReclamation}
+                                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors duration-200"
+                                                        variants={buttonVariants}
+                                                        whileHover="hover"
+                                                        whileTap="tap"
+                                                    >
+                                                        <DollarSign className="w-4 h-4" />
+                                                        {loadingReclamation ? "Traitement..." : "Réclamer son dû"}
+                                                    </motion.button>
+                                                )}
+
+                                                {/* Indicateur si déjà réclamé */}
+                                                {commande.du_reclame && (
+                                                    <span className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-600 rounded-lg">
+                                                        <CheckCircle className="w-4 h-4 text-green-500" />
+                                                        Dû réclamé
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
