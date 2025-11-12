@@ -2,7 +2,7 @@ import { Toaster } from 'react-hot-toast';
 import { CheckCircle, XCircle } from "lucide-react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
-import { useEffect } from 'react';
+// import { useEffect } from 'react';
 
 import Home from './pages/Home/Home'
 
