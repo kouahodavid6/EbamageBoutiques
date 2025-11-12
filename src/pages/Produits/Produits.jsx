@@ -8,6 +8,8 @@ import {
   Package,
   Filter,
   Grid3X3,
+  Calendar,
+  Clock,
 } from "lucide-react";
 import DashboardSidebar from "../../pages/components/DashboardSidebar"
 import DashboardHeader from "../../pages/components/DashboardHeader";
@@ -32,6 +34,11 @@ const Produits = () => {
 
   const [editProduct, setEditProduct] = useState(null);
   const [showCategories, setShowCategories] = useState(false);
+
+  // États pour les filtres
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [priceRange, setPriceRange] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
 
   const { produits = [], loading = false, fetchProduits, deleteProduit } = useProduitStore();
   const { categories = [], fetchCategories } = useCategorieStore();
@@ -89,38 +96,101 @@ const Produits = () => {
     setEditProduct(null);
   }, []);
 
+  // Fonction pour formater la date et l'heure
+  const formatDateTime = useCallback((dateString) => {
+    if (!dateString) return "Date inconnue";
+    try {
+      const date = new Date(dateString);
+      return {
+        date: date.toLocaleDateString('fr-FR'),
+        time: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      };
+    } catch {
+      return { date: "Date invalide", time: "" };
+    }
+  }, []);
+
   // Normalize produits
   const produitsArray = useMemo(() => (Array.isArray(produits) ? produits : []), [produits]);
 
-  // Sorting: prefer created_at / createdAt if present, otherwise fallback to hashid (stable)
-  const sortedProducts = useMemo(() => {
-    return [...produitsArray].sort((a, b) => {
-      const aDate = a?.created_at || a?.createdAt || null;
-      const bDate = b?.created_at || b?.createdAt || null;
-      if (aDate && bDate) {
-        return new Date(bDate) - new Date(aDate);
-      }
-      // fallback: compare hashid string (descending)
-      if (b?.hashid && a?.hashid) return b.hashid.localeCompare(a.hashid);
-      return 0;
-    });
-  }, [produitsArray]);
-
-  // Filter based on search term (name or category)
+  // Filtrage des produits
   const filteredProducts = useMemo(() => {
-    const q = searchTerm.trim().toLowerCase();
-    if (!q) return sortedProducts;
+    let filtered = [...produitsArray];
 
-    return sortedProducts.filter((product) => {
-      const nom = product.nom_article?.toLowerCase() || "";
-      const matchName = nom.includes(q);
+    // Filtre par recherche
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
+      filtered = filtered.filter((product) => {
+        const nom = product.nom_article?.toLowerCase() || "";
+        const matchName = nom.includes(q);
 
-      const cats = Array.isArray(product.categories) ? product.categories : [];
-      const matchCategory = cats.some((cat) => (cat?.nom_categorie || "").toLowerCase().includes(q));
+        const cats = Array.isArray(product.categories) ? product.categories : [];
+        const matchCategory = cats.some((cat) => (cat?.nom_categorie || "").toLowerCase().includes(q));
 
-      return matchName || matchCategory;
+        return matchName || matchCategory;
+      });
+    }
+
+    // Filtre par catégorie
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((product) => {
+        const cats = Array.isArray(product.categories) ? product.categories : [];
+        return cats.some(cat => cat.hashid === selectedCategory);
+      });
+    }
+
+    // Filtre par prix
+    if (priceRange !== "all") {
+      filtered = filtered.filter((product) => {
+        const prix = product.prix || 0;
+        switch (priceRange) {
+          case "0-5000":
+            return prix <= 5000;
+          case "5000-15000":
+            return prix > 5000 && prix <= 15000;
+          case "15000-30000":
+            return prix > 15000 && prix <= 30000;
+          case "30000+":
+            return prix > 30000;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Tri des produits
+    filtered.sort((a, b) => {
+      const aDate = a?.created_at || a?.createdAt;
+      const bDate = b?.created_at || b?.createdAt;
+
+      switch (sortBy) {
+        case "newest":
+          return new Date(bDate) - new Date(aDate);
+        case "oldest":
+          return new Date(aDate) - new Date(bDate);
+        case "price-low":
+          return (a.prix || 0) - (b.prix || 0);
+        case "price-high":
+          return (b.prix || 0) - (a.prix || 0);
+        case "name-asc":
+          return (a.nom_article || "").localeCompare(b.nom_article || "");
+        case "name-desc":
+          return (b.nom_article || "").localeCompare(a.nom_article || "");
+        default:
+          return new Date(bDate) - new Date(aDate);
+      }
     });
-  }, [searchTerm, sortedProducts]);
+
+    return filtered;
+  }, [produitsArray, searchTerm, selectedCategory, priceRange, sortBy]);
+
+  // Réinitialiser les filtres
+  const resetFilters = useCallback(() => {
+    setSearchTerm("");
+    setSelectedCategory("all");
+    setPriceRange("all");
+    setSortBy("newest");
+  }, []);
 
   // Animations
   const containerVariants = {
@@ -240,12 +310,83 @@ const Produits = () => {
             </div>
           )}
 
-          {/* Search */}
-          <div className="w-full bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-emerald-100/60">
-            <div className="relative">
-              <Search className="w-5 h-5 text-emerald-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input aria-label="Recherche de produit" type="text" placeholder="Rechercher un produit par nom ou catégorie..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 bg-white/50" />
+          {/* Filtres avancés */}
+          <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-emerald-100/60">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              {/* Recherche */}
+              <div className="relative">
+                <Search className="w-5 h-5 text-emerald-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input 
+                  aria-label="Recherche de produit" 
+                  type="text" 
+                  placeholder="Rechercher un produit..." 
+                  value={searchTerm} 
+                  onChange={(e) => setSearchTerm(e.target.value)} 
+                  className="w-full pl-10 pr-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 bg-white/50" 
+                />
+              </div>
+
+              {/* Filtre par catégorie */}
+              <div>
+                <select 
+                  value={selectedCategory} 
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 bg-white/50"
+                >
+                  <option value="all">Toutes les catégories</option>
+                  {categories.map((category) => (
+                    <option key={category.hashid} value={category.hashid}>
+                      {category.nom_categorie}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Filtre par prix */}
+              <div>
+                <select 
+                  value={priceRange} 
+                  onChange={(e) => setPriceRange(e.target.value)}
+                  className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 bg-white/50"
+                >
+                  <option value="all">Tous les prix</option>
+                  <option value="0-5000">0 - 5 000 FCFA</option>
+                  <option value="5000-15000">5 000 - 15 000 FCFA</option>
+                  <option value="15000-30000">15 000 - 30 000 FCFA</option>
+                  <option value="30000+">30 000 FCFA et plus</option>
+                </select>
+              </div>
+
+              {/* Tri */}
+              <div>
+                <select 
+                  value={sortBy} 
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full px-4 py-3 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 bg-white/50"
+                >
+                  <option value="newest">Plus récents</option>
+                  <option value="oldest">Plus anciens</option>
+                  <option value="price-low">Prix croissant</option>
+                  <option value="price-high">Prix décroissant</option>
+                  <option value="name-asc">Nom A-Z</option>
+                  <option value="name-desc">Nom Z-A</option>
+                </select>
+              </div>
             </div>
+
+            {/* Bouton réinitialiser les filtres */}
+            {(searchTerm || selectedCategory !== "all" || priceRange !== "all" || sortBy !== "newest") && (
+              <div className="flex justify-end">
+                <motion.button 
+                  onClick={resetFilters}
+                  className="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center gap-2 px-4 py-2 hover:bg-emerald-50 rounded-xl transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Réinitialiser les filtres
+                </motion.button>
+              </div>
+            )}
           </div>
 
           {/* Products list */}
@@ -260,13 +401,18 @@ const Produits = () => {
               ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-12">
                   <Package className="w-16 h-16 text-emerald-300 mx-auto mb-4" />
-                  <p className="text-emerald-600/70 text-lg mb-2">{searchTerm ? "Aucun produit trouvé" : "Aucun produit"}</p>
-                  <p className="text-emerald-500/60 text-sm">{searchTerm ? "Essayez de modifier vos critères de recherche" : "Commencez par ajouter votre premier produit"}</p>
+                  <p className="text-emerald-600/70 text-lg mb-2">
+                    {searchTerm || selectedCategory !== "all" || priceRange !== "all" ? "Aucun produit trouvé" : "Aucun produit"}
+                  </p>
+                  <p className="text-emerald-500/60 text-sm">
+                    {searchTerm || selectedCategory !== "all" || priceRange !== "all" ? "Essayez de modifier vos critères de recherche" : "Commencez par ajouter votre premier produit"}
+                  </p>
                 </div>
               ) : (
                 <div className="grid gap-4">
                   {filteredProducts.map((product, index) => {
                     const imageSrc = Array.isArray(product.images) && product.images.length > 0 ? (product.images[0].url || product.images[0]) : null;
+                    const { date, time } = formatDateTime(product.created_at || product.createdAt);
 
                     return (
                       <motion.div key={product.hashid} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-emerald-100 rounded-xl hover:shadow-md transition-all duration-300 bg-white/50 hover:bg-white gap-4" variants={itemVariants} custom={index} whileHover={{ y: -2 }}>
@@ -285,6 +431,18 @@ const Produits = () => {
                             <div className="flex items-center space-x-2 mt-2">
                               <span className="font-bold text-emerald-700 text-lg">{product.prix ? `${product.prix.toLocaleString('fr-FR')} FCFA` : '—'}</span>
                               {product.old_price && <span className="text-sm text-emerald-500/60 line-through">{product.old_price} FCFA</span>}
+                            </div>
+                            
+                            {/* Date et heure de création */}
+                            <div className="flex items-center space-x-2 mt-2 text-xs text-emerald-500/70">
+                              <Calendar className="w-3 h-3" />
+                              <span>{date}</span>
+                              {time && (
+                                <>
+                                  <Clock className="w-3 h-3" />
+                                  <span>{time}</span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
