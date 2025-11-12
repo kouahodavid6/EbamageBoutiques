@@ -295,12 +295,12 @@ const FormulaireLibelles = () => {
               <label className="block text-sm font-medium text-blue-800">
                 Options pour {getVariationName(selectedVariation)}:
               </label>
-              {isColorVariation() && (
+              {/* {isColorVariation() && (
                 <div className="flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-700 rounded-full text-xs">
                   <Palette className="w-3 h-3" />
                   <span>Input couleur</span>
                 </div>
-              )}
+              )} */}
             </div>
             
             <div className="space-y-3">
