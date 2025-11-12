@@ -47,19 +47,12 @@ const CategoriesList = () => {
     <div className="border border-emerald-100 rounded-xl p-4 bg-white/50 animate-pulse">
       <div className="flex items-center space-x-3">
         <div className="w-12 h-12 bg-emerald-200 rounded-lg flex-shrink-0"></div>
-        
+
         <div className="flex-1 min-w-0 space-y-2">
           <div className="h-4 bg-emerald-200 rounded w-3/4"></div>
           <div className="h-3 bg-emerald-200 rounded w-1/2"></div>
         </div>
       </div>
-
-      {/* <div className="mt-3 pt-2 border-t border-emerald-100">
-        <div className="flex justify-between items-center">
-          <div className="h-3 bg-emerald-200 rounded w-20"></div>
-          <div className="w-2 h-2 bg-emerald-200 rounded-full"></div>
-        </div>
-      </div> */}
     </div>
   );
 
@@ -171,27 +164,6 @@ const CategoriesList = () => {
                   </h3>
                 </div>
               </div>
-
-              {/* Badge indicateur
-              <motion.div 
-                className="mt-3 pt-2 border-t border-emerald-100"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 + (index * 0.1) }}
-              >
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-emerald-500/60">
-                    {categorie.image_categorie ? 'Avec image' : 'Sans image'}
-                  </span>
-                  <motion.div 
-                    className={`w-2 h-2 rounded-full ${
-                      categorie.image_categorie ? 'bg-emerald-400' : 'bg-amber-400'
-                    }`}
-                    whileHover={{ scale: 1.5 }}
-                    transition={{ duration: 0.2 }}
-                  />
-                </div>
-              </motion.div> */}
             </motion.div>
           ))}
         </motion.div>

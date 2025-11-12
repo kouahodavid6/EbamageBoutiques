@@ -34,7 +34,6 @@ registerBoutique: async (formData) => {
 
     if (data?.hashid) {
       localStorage.setItem("boutiqueHashId", data.hashid);
-      // console.log("HashID sauvegardé:", data.hashid); // Pour debug
     }
 
     set({ user: userData, loading: false });
@@ -59,7 +58,6 @@ loginBoutique: async (credentials) => {
 
     if (data?.hashid) {
       localStorage.setItem("boutiqueHashId", data.hashid);
-      // console.log("HashID sauvegardé:", data.hashid); // Pour debug
     }
 
     set({ user: userData, loading: false });

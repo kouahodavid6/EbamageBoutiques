@@ -41,7 +41,6 @@ const updateBoutiqueImage = async (hashid, imageFile) => {
         });
         return response.data;
     } catch (error) {
-        // Meilleure gestion d'erreur
         if (error.response?.data) {
             throw error.response.data;
         }

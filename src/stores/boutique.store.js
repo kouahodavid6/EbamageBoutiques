@@ -15,7 +15,7 @@ export const useBoutiqueStore = create((set, get) => ({
     try {
       const response = await boutiqueService.getSoldeBoutique();
       set({ 
-        soldeBoutique: response.data, // response.data contient directement le nombre (13500)
+        soldeBoutique: response.data,
         loading: false,
         success: response.message || 'Solde boutique récupéré avec succès'
       });

@@ -37,7 +37,7 @@ const ProduitDetailsModal = ({ isOpen, onClose, produit, onEdit, onDelete }) => 
 
   const isColorVariation = (variationName) => {
     return variationName?.toLowerCase().includes("couleur") || 
-           variationName?.toLowerCase().includes("color");
+            variationName?.toLowerCase().includes("color");
   };
 
   const getFormattedLibelles = (variation) => {

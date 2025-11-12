@@ -10,21 +10,15 @@ const useCommandeStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await commandeService.listerCommandesBoutique();
-      
-      console.log('📦 Réponse API commandes:', response); // Debug
-      
+
       // Accéder au tableau data depuis la réponse API
-      // Selon votre structure API, ça pourrait être response.data.data ou response.data
       const commandes = response.data?.data || response.data || [];
-      
-      console.log('📦 Commandes extraites:', commandes); // Debug
-      
+
       set({ 
         commandes: Array.isArray(commandes) ? commandes : [],
         loading: false 
       });
     } catch (error) {
-      console.error('❌ Erreur fetchCommandes:', error);
       const message = error.response?.data?.message || "Erreur lors du chargement des commandes";
       set({ error: message, loading: false });
     }

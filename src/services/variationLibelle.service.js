@@ -28,7 +28,6 @@ const listerVariationsBoutique = async () => {
     }
 };
 
-// CORRECTION : Utiliser la bonne route pour la modification
 const modifierVariation = async (hashid, data) => {
     try {
         const response = await axiosInstance.post(`/api/variation/${hashid}/update`, data);
@@ -38,7 +37,6 @@ const modifierVariation = async (hashid, data) => {
     }
 };
 
-// CORRECTION : Utiliser la bonne route pour la suppression
 const supprimerVariation = async (hashid) => {
     try {
         const response = await axiosInstance.post(`/api/variation/${hashid}/delete`);

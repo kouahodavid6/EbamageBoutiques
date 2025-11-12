@@ -22,7 +22,7 @@ const Dashboard = () => {
     // Chargement initial
     useEffect(() => {
         fetchSoldeBoutique();
-    }, []);
+    }, [fetchSoldeBoutique]);
 
     // Clear messages après 5 secondes
     useEffect(() => {
@@ -32,7 +32,7 @@ const Dashboard = () => {
             }, 5000);
             return () => clearTimeout(timer);
         }
-    }, [error, success]);
+    }, [error, success, clearMessages]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50/20 flex flex-col md:flex-row">
