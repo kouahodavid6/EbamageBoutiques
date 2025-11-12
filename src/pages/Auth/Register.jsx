@@ -4,6 +4,7 @@ import Input from "../../components/Input";
 import { ArrowLeft, Store, AlertCircle, HandHeart, Sparkles } from "lucide-react";
 import { useState } from "react";
 import useAuthStore from "../../stores/auth.store";
+import toast from "react-hot-toast";
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -29,8 +30,10 @@ const Register = () => {
             const res = await registerBoutique(formData);
             console.log("Inscription réussie:", res);
             navigate("/dashboard");
+            toast.success("connexion réussie");
         } catch (error) {
             console.error("Erreur lors de l'inscription :", error);
+            toast.success("Echèc lors de l'inscription");
         }
     };
 
