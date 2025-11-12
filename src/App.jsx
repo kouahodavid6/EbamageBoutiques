@@ -18,18 +18,18 @@ import Notifications from './pages/notifications/Notifications';
 
 import NotFound from './components/NotFound';
 
-import { generateToken, messaging } from './notifications/firebase';
-import { onMessage } from 'firebase/messaging';
+// import { generateToken, messaging } from './notifications/firebase';
+// import { onMessage } from 'firebase/messaging';
 
 function App() {
-  useEffect(() => {
-    generateToken();
+  // useEffect(() => {
+  //   generateToken();
 
-    onMessage(messaging, (payload) => {
-      console.log('Message en foreground:', payload);
-      // toast(payload.notification.body);
-    });
-  }, []);
+  //   onMessage(messaging, (payload) => {
+  //     console.log('Message en foreground:', payload);
+  //     // toast(payload.notification.body);
+  //   });
+  // }, []);
 
   return (
     <Router>

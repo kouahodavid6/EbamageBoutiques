@@ -5,34 +5,73 @@ import DashboardSidebar from "../../pages/components/DashboardSidebar"
 import DashboardHeader from "../../pages/components/DashboardHeader";
 import { motion } from "framer-motion";
 import { useBoutiqueStore } from "../../stores/boutique.store";
+import useDeviceTokenStore from "../../stores/deviceToken.store";
+import useAuthStore from "../../stores/auth.store";
+import { generateToken } from "../../notifications/firebase";
 
 const Dashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    // Store Zustand
+    // Stores Zustand
+    const { user } = useAuthStore();
     const {
         soldeBoutique,
-        loading,
-        error,
-        success,
+        loading: boutiqueLoading,
+        error: boutiqueError,
+        success: boutiqueSuccess,
         fetchSoldeBoutique,
-        clearMessages
+        clearMessages: clearBoutiqueMessages
     } = useBoutiqueStore();
 
-    // Chargement initial
+    const {
+        loading: deviceTokenLoading,
+        error: deviceTokenError,
+        success: deviceTokenSuccess,
+        registerDeviceToken,
+        clearMessages: clearDeviceTokenMessages
+    } = useDeviceTokenStore();
+
+    // ENREGISTREMENT AUTOMATIQUE DU DEVICE TOKEN
+    useEffect(() => {
+        const registerDeviceTokenAutomatically = async () => {
+            if (user?.hashid) {
+                try {
+                    const token = await generateToken();
+                    if (token) {
+                        await registerDeviceToken(user.hashid, token);
+                    }
+                } catch (error) {
+                    // Gestion silencieuse des erreurs
+                }
+            }
+        };
+
+        registerDeviceTokenAutomatically();
+    }, [user?.hashid, registerDeviceToken]);
+
+    // Chargement initial du solde
     useEffect(() => {
         fetchSoldeBoutique();
     }, [fetchSoldeBoutique]);
 
     // Clear messages après 5 secondes
     useEffect(() => {
-        if (error || success) {
+        if (boutiqueError || boutiqueSuccess) {
             const timer = setTimeout(() => {
-                clearMessages();
+                clearBoutiqueMessages();
             }, 5000);
             return () => clearTimeout(timer);
         }
-    }, [error, success, clearMessages]);
+    }, [boutiqueError, boutiqueSuccess, clearBoutiqueMessages]);
+
+    useEffect(() => {
+        if (deviceTokenError || deviceTokenSuccess) {
+            const timer = setTimeout(() => {
+                clearDeviceTokenMessages();
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [deviceTokenError, deviceTokenSuccess, clearDeviceTokenMessages]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50/20 flex flex-col md:flex-row">
@@ -78,25 +117,59 @@ const Dashboard = () => {
 
                 <main className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
                     {/* Messages d'alerte */}
-                    {error && (
+                    {boutiqueError && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6"
                         >
                             <AlertCircle className="w-5 h-5" />
-                            {error}
+                            {boutiqueError}
                         </motion.div>
                     )}
 
-                    {success && (
+                    {boutiqueSuccess && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6"
                         >
                             <CheckCircle className="w-5 h-5" />
-                            {success}
+                            {boutiqueSuccess}
+                        </motion.div>
+                    )}
+
+                    {/* Messages device token */}
+                    {deviceTokenError && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6"
+                        >
+                            <AlertCircle className="w-5 h-5" />
+                            Notification: {deviceTokenError}
+                        </motion.div>
+                    )}
+
+                    {deviceTokenSuccess && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6"
+                        >
+                            <CheckCircle className="w-5 h-5" />
+                            ✅ Notifications activées avec succès
+                        </motion.div>
+                    )}
+
+                    {deviceTokenLoading && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-gray-50 border border-gray-200 text-gray-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6"
+                        >
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                            Activation des notifications...
                         </motion.div>
                     )}
 
@@ -130,7 +203,7 @@ const Dashboard = () => {
                                     <DollarSign className="w-4 h-4 text-emerald-600" />
                                 </div>
                             </div>
-                            {loading ? (
+                            {boutiqueLoading ? (
                                 <div className="animate-pulse">
                                     <div className="h-8 bg-emerald-200 rounded mb-2"></div>
                                     <div className="h-4 bg-emerald-100 rounded w-20"></div>

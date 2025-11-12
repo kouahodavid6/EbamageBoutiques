@@ -1,4 +1,3 @@
-// ✅ auth.store.js
 import { create } from "zustand";
 import { authService } from "../services/auth.service";
 
@@ -20,59 +19,58 @@ const useAuthStore = create((set) => ({
     set({ user: userData });
   },
 
-// ✅ auth.store.js - PARTIE À CORRIGER
-registerBoutique: async (formData) => {
-  set({ loading: true });
-  try {
-    const response = await authService.registerBoutique(formData);
-    const { data, token } = response.data;
-    const userData = { ...data, token };
+  registerBoutique: async (formData) => {
+    set({ loading: true });
+    try {
+      const response = await authService.registerBoutique(formData);
+      const { data, token } = response.data;
+      const userData = { ...data, token };
 
-    // ✅ Sauvegarde du token + user
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
+      // ✅ Sauvegarde du token + user
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(userData));
 
-    if (data?.hashid) {
-      localStorage.setItem("boutiqueHashId", data.hashid);
+      if (data?.hashid) {
+        localStorage.setItem("boutiqueHashId", data.hashid);
+      }
+
+      set({ user: userData, loading: false, error: null });
+      return response;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message;
+      set({ error: errorMessage, showError: true, loading: false });
+      throw error;
     }
+  },
 
-    set({ user: userData, loading: false });
-    return response;
-  } catch (error) {
-    const errorMessage = error.response?.data?.message || error.message;
-    set({ error: errorMessage, showError: true, loading: false });
-    throw error;
-  }
-},
+  loginBoutique: async (credentials) => {
+    set({ loading: true });
+    try {
+      const response = await authService.loginBoutique(credentials);
+      const { data, token } = response.data;
+      const userData = { ...data, token };
 
-loginBoutique: async (credentials) => {
-  set({ loading: true });
-  try {
-    const response = await authService.loginBoutique(credentials);
-    const { data, token } = response.data;
-    const userData = { ...data, token };
+      // ✅ Sauvegarde du token + user
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(userData));
 
-    // ✅ Sauvegarde du token + user
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
+      if (data?.hashid) {
+        localStorage.setItem("boutiqueHashId", data.hashid);
+      }
 
-    if (data?.hashid) {
-      localStorage.setItem("boutiqueHashId", data.hashid);
+      set({ user: userData, loading: false, error: null });
+      return response;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message;
+      set({ error: errorMessage, showError: true, loading: false });
+      throw error;
     }
-
-    set({ user: userData, loading: false });
-    return response;
-  } catch (error) {
-    const errorMessage = error.response?.data?.message || error.message;
-    set({ error: errorMessage, showError: true, loading: false });
-    throw error;
-  }
-},
-
+  },
 
   logout: () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("boutiqueHashId");
     set({ user: null });
   },
 }));
