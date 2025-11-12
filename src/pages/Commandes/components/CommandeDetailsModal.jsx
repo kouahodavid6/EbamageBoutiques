@@ -6,7 +6,6 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Truck,
   X,
   Calendar,
   ShoppingBag,
@@ -30,7 +29,7 @@ const CommandeDetailsModal = ({ commande, isOpen, onClose }) => {
             <Clock className="w-3 h-3" /> {status}
           </span>
         );
-      case "Validée":
+      case "Livrée":
       case "Confirmée":
         return (
           <span className={`bg-emerald-100 text-emerald-800 ${baseClasses}`}>
@@ -41,13 +40,6 @@ const CommandeDetailsModal = ({ commande, isOpen, onClose }) => {
         return (
           <span className={`bg-red-100 text-red-800 ${baseClasses}`}>
             <XCircle className="w-3 h-3" /> {status}
-          </span>
-        );
-      case "En cours":
-      case "En livraison":
-        return (
-          <span className={`bg-blue-100 text-blue-800 ${baseClasses}`}>
-            <Truck className="w-3 h-3" /> {status}
           </span>
         );
       default:
