@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Bell, Check, Trash2, Store } from "lucide-react";
+import { Bell, Store } from "lucide-react";
 import DashboardSidebar from '../components/DashboardSidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import { motion } from "framer-motion";
 import { useNotificationStore } from '../../stores/notification.store';
 
-/* ------------------------------------------------------------- */
 const Notifications = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -15,13 +14,21 @@ const Notifications = () => {
         loading,
         error,
         getNotifications,
-        clearError
+        clearError,
+        markAllAsRead
     } = useNotificationStore();
 
     // Charger les notifications au montage du composant
     useEffect(() => {
         getNotifications();
     }, [getNotifications]);
+
+    // Marquer toutes les notifications comme lues quand on arrive sur la page
+    useEffect(() => {
+        if (unreadCount > 0) {
+            markAllAsRead();
+        }
+    }, [unreadCount, markAllAsRead]);
 
     // Réessayer en cas d'erreur
     const handleRetry = () => {
@@ -43,7 +50,6 @@ const Notifications = () => {
     // Vérifier si les données de l'API sont valides
     const isValidNotifications = Array.isArray(notifications);
 
-    /* ============================================================= */
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50/20 flex flex-col md:flex-row">
 
@@ -61,7 +67,6 @@ const Notifications = () => {
                     ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
                     md:translate-x-0 w-64 h-screen`}
             >
-                {/* Croix mobile */}
                 <div className="md:hidden flex justify-end p-4 absolute top-0 right-0 z-50">
                     <button
                         onClick={() => setSidebarOpen(false)}
@@ -104,18 +109,6 @@ const Notifications = () => {
                                     Restez informé de l'activité de votre boutique
                                 </p>
                             </div>
-
-                            {/* Afficher le bouton seulement s'il y a des notifications non lues */}
-                            {!loading && isValidNotifications && notifications.length > 0 && unreadCount > 0 && (
-                                <motion.button
-                                    className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors duration-200 flex items-center space-x-2"
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                >
-                                    <Check className="w-4 h-4" />
-                                    <span>Tout marquer comme lu</span>
-                                </motion.button>
-                            )}
                         </div>
                     </motion.div>
 
@@ -147,29 +140,6 @@ const Notifications = () => {
                         </motion.div>
                     )}
 
-                    {/* Indicateur de notifications non lues */}
-                    {!loading && !error && isValidNotifications && unreadCount > 0 && (
-                        <motion.div 
-                            className="mb-6"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                                <div className="flex items-center space-x-3">
-                                    <div className="bg-emerald-100 p-2 rounded-lg">
-                                        <Bell className="w-5 h-5 text-emerald-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-emerald-800 font-medium">
-                                            Vous avez {unreadCount} notification{unreadCount > 1 ? 's' : ''} non lue{unreadCount > 1 ? 's' : ''}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-
                     {/* Liste des notifications */}
                     <motion.div 
                         className="space-y-4"
@@ -189,10 +159,8 @@ const Notifications = () => {
                                 ))}
                             </div>
                         ) : error ? (
-                            // Ne rien afficher si erreur (déjà géré au-dessus)
                             null
                         ) : !isValidNotifications ? (
-                            // Données invalides
                             <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center">
                                 <Bell className="w-16 h-16 text-yellow-300 mx-auto mb-4" />
                                 <h3 className="text-xl font-semibold text-yellow-900 mb-2">
@@ -209,7 +177,6 @@ const Notifications = () => {
                                 </button>
                             </div>
                         ) : notifications.length === 0 ? (
-                            // Aucune notification - État vide
                             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
                                 <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -227,7 +194,7 @@ const Notifications = () => {
                                 </div>
                             </div>
                         ) : (
-                            // Liste des notifications
+                            // Liste des notifications (sans boutons d'action)
                             notifications.map((notification, index) => (
                                 <motion.div
                                     key={notification.id || index}
@@ -241,7 +208,7 @@ const Notifications = () => {
                                     transition={{ delay: index * 0.1 }}
                                 >
                                     <div className="p-6">
-                                        <div className="flex justify-between items-start mb-3">
+                                        <div className="flex justify-between items-start">
                                             <div className="flex-1">
                                                 <h3 className={`font-semibold text-lg ${
                                                     !notification.read ? 'text-gray-900' : 'text-gray-700'
@@ -255,27 +222,6 @@ const Notifications = () => {
                                                     {formatDate(notification.created_at)}
                                                 </p>
                                             </div>
-                                            
-                                            <div className="flex space-x-2 ml-4">
-                                                {!notification.read && (
-                                                    <motion.button
-                                                        className="bg-green-100 text-green-600 p-2 rounded-xl hover:bg-green-200 transition-colors duration-200"
-                                                        whileHover={{ scale: 1.1 }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                        title="Marquer comme lu"
-                                                    >
-                                                        <Check className="w-4 h-4" />
-                                                    </motion.button>
-                                                )}
-                                                <motion.button
-                                                    className="bg-red-100 text-red-600 p-2 rounded-xl hover:bg-red-200 transition-colors duration-200"
-                                                    whileHover={{ scale: 1.1 }}
-                                                    whileTap={{ scale: 0.9 }}
-                                                    title="Supprimer"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </motion.button>
-                                            </div>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -283,7 +229,7 @@ const Notifications = () => {
                         )}
                     </motion.div>
 
-                    {/* Message informatif - seulement s'il y a des notifications */}
+                    {/* Message informatif */}
                     {!loading && !error && isValidNotifications && notifications.length > 0 && (
                         <motion.div 
                             className="mt-8 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-200/40 rounded-2xl p-6 text-center"
@@ -300,7 +246,7 @@ const Notifications = () => {
                         </motion.div>
                     )}
 
-                    {/* Message alternatif quand il n'y a pas de notifications */}
+                    {/* Message quand il n'y a pas de notifications */}
                     {!loading && !error && isValidNotifications && notifications.length === 0 && (
                         <motion.div 
                             className="mt-8 bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-200/40 rounded-2xl p-6 text-center"

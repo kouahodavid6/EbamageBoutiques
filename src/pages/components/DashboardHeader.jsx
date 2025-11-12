@@ -1,23 +1,23 @@
 import { Menu, Bell, Store } from 'lucide-react';
 import useBoutiqueInfoStore from '../../stores/infoBoutique.store';
-import { Link, useNavigate } from 'react-router-dom'; // Ajouter useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useNotificationStore } from '../../stores/notification.store';
 
 const DashboardHeader = ({ title, toggleSidebar }) => {
     const { boutique, loading } = useBoutiqueInfoStore();
-    const navigate = useNavigate(); // Hook pour la navigation
+    const { unreadCount, markAllAsRead } = useNotificationStore();
+    const navigate = useNavigate();
 
-    // Sécurité : on vérifie si boutique est bien présent
     const nom = boutique?.nom_btq?.toUpperCase() || 'Boutique';
-    
-    // Récupérer la première lettre pour l'avatar
     const initiale = nom.charAt(0);
-
-    // Vérifier si la boutique a une image
     const hasImage = boutique?.image_btq;
 
-    // Fonction pour naviguer vers la page des notifications
     const handleNotificationsClick = () => {
+        // Marquer toutes les notifications comme lues lorsqu'on clique
+        if (unreadCount > 0) {
+            markAllAsRead();
+        }
         navigate('/notifications');
     };
 
@@ -44,7 +44,7 @@ const DashboardHeader = ({ title, toggleSidebar }) => {
 
             {/* Zone à droite : notifications + profil */}
             <div className="ml-auto flex items-center space-x-4">
-                {/* Bouton cloche de notifications - MAINTENANT CLICKABLE */}
+                {/* Bouton cloche de notifications */}
                 <motion.button 
                     onClick={handleNotificationsClick}
                     className="p-2 rounded-full text-emerald-600 hover:bg-emerald-100/80 transition-all duration-300 relative border border-transparent hover:border-emerald-200"
@@ -52,7 +52,10 @@ const DashboardHeader = ({ title, toggleSidebar }) => {
                     whileTap={{ scale: 0.9 }}
                 >
                     <Bell className="h-6 w-6" />
-                    <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-gradient-to-r from-emerald-400 to-green-400 rounded-full border border-white"/>
+                    {/* Afficher le point rouge seulement s'il y a des notifications non lues */}
+                    {unreadCount > 0 && (
+                        <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-gradient-to-r from-red-400 to-red-500 rounded-full border border-white"/>
+                    )}
                 </motion.button>
 
                 {/* Avatar + infos utilisateur */}
@@ -64,10 +67,8 @@ const DashboardHeader = ({ title, toggleSidebar }) => {
                     >
                         <div className="relative">
                             {loading ? (
-                                // Skeleton pendant le chargement
                                 <div className="w-10 h-10 rounded-2xl bg-emerald-100 animate-pulse"></div>
                             ) : hasImage ? (
-                                // Afficher l'image si elle existe
                                 <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-lg">
                                     <img
                                         src={boutique.image_btq}
@@ -76,7 +77,6 @@ const DashboardHeader = ({ title, toggleSidebar }) => {
                                     />
                                 </div>
                             ) : (
-                                // Afficher l'avatar avec initiale si pas d'image
                                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center text-white font-semibold shadow-lg">
                                     {initiale}
                                 </div>
@@ -90,7 +90,6 @@ const DashboardHeader = ({ title, toggleSidebar }) => {
                         
                         <div className="hidden md:block">
                             {loading ? (
-                                // Skeleton pour le texte
                                 <div className="space-y-1">
                                     <div className="h-4 bg-emerald-100 rounded w-20 animate-pulse"></div>
                                     <div className="h-3 bg-emerald-100 rounded w-16 animate-pulse"></div>
