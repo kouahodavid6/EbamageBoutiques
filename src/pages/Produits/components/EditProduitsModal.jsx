@@ -1,11 +1,10 @@
 import { Edit2, X } from "lucide-react";
-import RegistrationFormRecrue from "./RegistrationProduitsModal";
+import RegisterProduitsModal from "./RegisterProduitsModal";
 import { motion, AnimatePresence } from "framer-motion";
 
-const EditRecrueModal = ({ isOpen, onClose, initialData, onSubmit }) => {
+const EditProduitsModal = ({ isOpen, onClose, initialData }) => {
     if (!isOpen) return null;
 
-    // Variants d'animation
     const modalVariants = {
         hidden: {
             opacity: 0,
@@ -84,7 +83,6 @@ const EditRecrueModal = ({ isOpen, onClose, initialData, onSubmit }) => {
                         onClick={(e) => e.stopPropagation()}
                         variants={modalVariants}
                     >
-                        {/* En-tête */}
                         <header className="p-6 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-green-50/30 flex justify-between items-center">
                             <div className="flex items-center gap-4">
                                 <motion.div
@@ -112,22 +110,19 @@ const EditRecrueModal = ({ isOpen, onClose, initialData, onSubmit }) => {
                             </motion.button>
                         </header>
 
-                        {/* Contenu */}
                         <motion.section 
                             className="p-6 overflow-y-auto flex-1 scroll-smooth bg-gradient-to-b from-white to-emerald-50/20"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.2, duration: 0.6 }}
                         >
-                            <RegistrationFormRecrue
-                                onSubmit={onSubmit}
+                            <RegisterProduitsModal
                                 initialData={initialData}
                                 isEdit={true}
-                                onCancel={onClose}
+                                onClose={onClose}
                             />
                         </motion.section>
 
-                        {/* Pied de page */}
                         <motion.footer 
                             className="p-4 border-t border-emerald-100 bg-emerald-50/30"
                             initial={{ opacity: 0, y: 20 }}
@@ -146,4 +141,4 @@ const EditRecrueModal = ({ isOpen, onClose, initialData, onSubmit }) => {
     );
 };
 
-export default EditRecrueModal;
+export default EditProduitsModal;

@@ -2,18 +2,7 @@ import { X, Edit, Trash2, PackageSearch, Image, Tag, DollarSign, Palette } from 
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const ProduitDetailsModal = ({
-  isOpen,
-  onClose,
-  produit,
-  onEdit,
-  onDelete,
-}) => {
-  useEffect(() => {
-    if (isOpen && produit) {
-      console.log("Produit reçu dans le modal :", produit);
-    }
-  }, [isOpen, produit]);
+const ProduitDetailsModal = ({ isOpen, onClose, produit, onEdit, onDelete }) => {
 
   const modalVariants = {
     hidden: { 
@@ -46,6 +35,19 @@ const ProduitDetailsModal = ({
     exit: { opacity: 0 }
   };
 
+  const isColorVariation = (variationName) => {
+    return variationName?.toLowerCase().includes("couleur") || 
+           variationName?.toLowerCase().includes("color");
+  };
+
+  const getFormattedLibelles = (variation) => {
+    if (!variation.lib_variation || variation.lib_variation.length === 0) {
+      return ["Aucune option sélectionnée"];
+    }
+    
+    return variation.lib_variation;
+  };
+
   if (!isOpen || !produit) return null;
 
   return (
@@ -67,7 +69,6 @@ const ProduitDetailsModal = ({
           className="relative z-[10000] bg-white max-w-3xl w-full rounded-3xl shadow-2xl border border-emerald-100/30 overflow-hidden mx-auto my-6"
           variants={modalVariants}
         >
-          {/* Header avec gradient */}
           <div className="bg-gradient-to-r from-emerald-500 to-green-500 p-6 text-white">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-4">
@@ -97,10 +98,8 @@ const ProduitDetailsModal = ({
             </div>
           </div>
 
-          {/* Contenu scrollable */}
           <div className="max-h-[60vh] overflow-y-auto p-6">
             <div className="space-y-6">
-              {/* Nom et Description */}
               <motion.div 
                 className="text-center"
                 initial={{ opacity: 0, y: 20 }}
@@ -117,7 +116,6 @@ const ProduitDetailsModal = ({
                 )}
               </motion.div>
 
-              {/* Prix */}
               <motion.div 
                 className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-5 border border-emerald-100 text-center"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -142,7 +140,6 @@ const ProduitDetailsModal = ({
                 </div>
               </motion.div>
 
-              {/* Images */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -180,7 +177,6 @@ const ProduitDetailsModal = ({
                 )}
               </motion.div>
 
-              {/* Catégories */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -213,69 +209,97 @@ const ProduitDetailsModal = ({
                 )}
               </motion.div>
 
-              {/* Variations */}
-              {produit.variations?.length > 0 && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 rounded-xl bg-emerald-500/10">
-                      <Palette className="w-5 h-5 text-emerald-600" />
-                    </div>
-                    <h4 className="font-semibold text-emerald-900 text-base">Variations</h4>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-xl bg-emerald-500/10">
+                    <Palette className="w-5 h-5 text-emerald-600" />
                   </div>
-                  
-                  <div className="grid gap-3">
-                    {produit.variations.map((v, i) => (
+                  <h4 className="font-semibold text-emerald-900 text-base">
+                    Variations {produit.variations?.length > 0 && `(${produit.variations.length})`}
+                  </h4>
+                </div>
+                
+                {produit.variations && produit.variations.length > 0 ? (
+                  <div className="grid gap-4">
+                    {produit.variations.map((variation, index) => (
                       <motion.div 
-                        key={i} 
-                        className="bg-white rounded-xl p-3 border border-emerald-100 shadow-sm"
-                        whileHover={{ y: -2 }}
-                        transition={{ duration: 0.2 }}
+                        key={variation.hashid || index} 
+                        className="bg-white rounded-xl p-4 border border-emerald-100 shadow-sm"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 + (index * 0.1) }}
+                        whileHover={{ y: -2, shadow: "0 10px 25px -5px rgba(16, 185, 129, 0.1)" }}
                       >
-                        <p className="font-semibold text-emerald-800 text-base mb-2">
-                          {v.nom_variation}
-                        </p>
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="font-semibold text-emerald-800 text-base">
+                            {variation.nom_variation}
+                          </p>
+                          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium">
+                            {variation.lib_variation?.length || 0} option(s)
+                          </span>
+                        </div>
+                        
                         <div className="flex flex-wrap gap-2">
-                          {v.lib_variation.map((val, j) =>
-                            v.nom_variation.toLowerCase().includes("couleur") || v.nom_variation.toLowerCase().includes("color") ? (
+                          {getFormattedLibelles(variation).map((libelle, libIndex) =>
+                            isColorVariation(variation.nom_variation) ? (
                               <motion.div
-                                key={j}
+                                key={libIndex}
                                 className="relative group"
                                 whileHover={{ scale: 1.1, rotate: 5 }}
                                 transition={{ duration: 0.2 }}
                               >
                                 <div 
-                                  className="w-8 h-8 rounded-lg border-2 border-white shadow-lg"
-                                  style={{ backgroundColor: val }}
-                                />
-                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                  {val}
+                                  className="w-10 h-10 rounded-xl border-2 border-white shadow-lg flex items-center justify-center"
+                                  style={{ backgroundColor: libelle }}
+                                >
+                                  {(libelle.toLowerCase() === '#ffffff' || libelle.toLowerCase() === 'white' || libelle.toLowerCase() === 'blanc') && (
+                                    <div className="w-4 h-4 border border-gray-300 rounded"></div>
+                                  )}
+                                </div>
+                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                                  {libelle}
                                 </div>
                               </motion.div>
                             ) : (
                               <motion.span
-                                key={j}
-                                className="bg-emerald-50 text-emerald-700 px-2 py-1.5 rounded-lg border border-emerald-200 font-medium text-sm"
-                                whileHover={{ scale: 1.05 }}
+                                key={libIndex}
+                                className="bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 px-3 py-2 rounded-lg border border-emerald-200 font-medium text-sm shadow-sm"
+                                whileHover={{ scale: 1.05, y: -1 }}
                                 transition={{ duration: 0.2 }}
                               >
-                                {val}
+                                {libelle}
                               </motion.span>
                             )
                           )}
                         </div>
+                        
+                        {(!variation.lib_variation || variation.lib_variation.length === 0) && (
+                          <div className="text-center py-2 bg-amber-50 rounded-lg border border-amber-200 mt-2">
+                            <p className="text-amber-600 text-sm font-medium">
+                              Aucune option sélectionnée pour cette variation
+                            </p>
+                          </div>
+                        )}
                       </motion.div>
                     ))}
                   </div>
-                </motion.div>
-              )}
+                ) : (
+                  <div className="text-center py-6 bg-emerald-50/50 rounded-xl border-2 border-dashed border-emerald-200">
+                    <Palette className="w-10 h-10 text-emerald-300 mx-auto mb-2" />
+                    <p className="text-emerald-400 font-medium text-sm">Aucune variation assignée</p>
+                    <p className="text-emerald-300 text-xs mt-1">
+                      Ajoutez des variations dans l'éditeur de produit
+                    </p>
+                  </div>
+                )}
+              </motion.div>
             </div>
           </div>
 
-          {/* Actions */}
           <motion.div 
             className="bg-emerald-50/50 border-t border-emerald-100 p-5"
             initial={{ opacity: 0, y: 20 }}

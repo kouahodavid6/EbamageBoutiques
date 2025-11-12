@@ -138,6 +138,25 @@ const Produits = () => {
     tap: { scale: 0.98, transition: { duration: 0.08 } },
   };
 
+  // Skeleton loader for products
+  const ProductSkeleton = () => (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-emerald-100 rounded-xl bg-white/50 gap-4 animate-pulse">
+      <div className="flex items-center space-x-4 flex-1 min-w-0">
+        <div className="w-16 h-16 bg-emerald-200 rounded-xl flex-shrink-0"></div>
+        
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="h-4 bg-emerald-200 rounded w-3/4"></div>
+          <div className="h-3 bg-emerald-200 rounded w-1/2"></div>
+          <div className="h-4 bg-emerald-200 rounded w-1/4"></div>
+        </div>
+      </div>
+
+      <div className="flex justify-end sm:justify-center">
+        <div className="w-24 h-10 bg-emerald-200 rounded-xl"></div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-50/20 flex flex-col md:flex-row">
       {/* Overlay mobile */}
@@ -177,7 +196,13 @@ const Produits = () => {
             <div className="flex items-center gap-3">
               <div className="hidden sm:flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-2 rounded-2xl border border-emerald-100">
                 <Package className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm font-medium text-emerald-700">{filteredProducts.length} produit{filteredProducts.length !== 1 ? "s" : ""}</span>
+                <span className="text-sm font-medium text-emerald-700">
+                  {loading ? (
+                    <div className="h-4 w-16 bg-emerald-200 rounded animate-pulse"></div>
+                  ) : (
+                    `${filteredProducts.length} produit${filteredProducts.length !== 1 ? "s" : ""}`
+                  )}
+                </span>
               </div>
             </div>
           </motion.div>
@@ -186,7 +211,13 @@ const Produits = () => {
           <motion.div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.1 }}>
             <div className="flex items-center space-x-3">
               <Grid3X3 className="w-5 h-5 text-emerald-500" />
-              <h2 className="text-lg font-semibold text-emerald-800">Produits ({filteredProducts.length})</h2>
+              <h2 className="text-lg font-semibold text-emerald-800">
+                {loading ? (
+                  <div className="h-6 w-32 bg-emerald-200 rounded animate-pulse"></div>
+                ) : (
+                  `Produits (${filteredProducts.length})`
+                )}
+              </h2>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -221,8 +252,10 @@ const Produits = () => {
           <motion.div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100/60" initial="hidden" animate="visible" variants={containerVariants}>
             <div className="p-4 sm:p-6">
               {loading ? (
-                <div className="flex justify-center items-center h-64">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500" />
+                <div className="space-y-4">
+                  {[...Array(6)].map((_, index) => (
+                    <ProductSkeleton key={index} />
+                  ))}
                 </div>
               ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-12">

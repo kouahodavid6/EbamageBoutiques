@@ -1,9 +1,9 @@
 import toast from "react-hot-toast";
 import { useState, useEffect, useRef } from "react";
-import { Image, X, Plus, ChevronDown, Upload, Package, Crop, RotateCcw, Check } from "lucide-react";
+import { Image, X, Plus, ChevronDown, Upload, Package, Crop, RotateCcw, Check, Palette } from "lucide-react";
 import useProduitStore from "../../../stores/produit.store";
 import useCategorieStore from "../../../stores/categorie.store";
-//import { getVariationsShop } from "../../../services/libelleVariation.service";
+import useVariationStore from "../../../stores/variationLibelle.store";
 import { motion, AnimatePresence } from "framer-motion";
 
 const RegisterProduitsModal = ({
@@ -19,6 +19,8 @@ const RegisterProduitsModal = ({
     fetchCategories,
   } = useCategorieStore();
 
+  const { variationsBoutique, fetchVariationsBoutique, loading: variationsLoading } = useVariationStore();
+
   const [formData, setFormData] = useState({
     nom_article: "",
     prix: "",
@@ -26,15 +28,11 @@ const RegisterProduitsModal = ({
     categorie: "",
     description: "",
     images: [],
-    variations: [],
   });
   
-  const [shopVariations, setShopVariations] = useState([]);
-  const [loadingVariations, setLoadingVariations] = useState(true);
   const [selectedVariations, setSelectedVariations] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // États pour le redimensionnement d'image
   const [isCropping, setIsCropping] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(null);
   const [cropScale, setCropScale] = useState(1);
@@ -42,26 +40,11 @@ const RegisterProduitsModal = ({
 
   useEffect(() => {
     fetchCategories();
-    
-    const fetchShopVariations = async () => {
-      try {
-        const response = await getVariationsShop();
-        if (response.data.success) {
-          setShopVariations(response.data.data);
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement des variations:", error);
-        toast.error("Erreur lors du chargement des variations");
-      } finally {
-        setLoadingVariations(false);
-      }
-    };
-    
-    fetchShopVariations();
-  }, [fetchCategories]);
+    fetchVariationsBoutique();
+  }, [fetchCategories, fetchVariationsBoutique]);
 
   useEffect(() => {
-    if (initialData) {
+    if (initialData && isEdit) {
       setFormData({
         nom_article: initialData.nom_article || "",
         prix: initialData.prix || "",
@@ -69,14 +52,29 @@ const RegisterProduitsModal = ({
         categorie: initialData.categories?.[0]?.hashid || "",
         description: initialData.description || "",
         images: initialData.images?.map((img) => ({ url: img })) || [],
-        variations: initialData.variations || [],
       });
       
       if (initialData.variations && initialData.variations.length > 0) {
-        setSelectedVariations(initialData.variations.map(v => v.hashid));
+        const variationsWithLibelles = initialData.variations.map(variation => ({
+          variationId: variation.hashid,
+          selectedLibelles: variation.lib_variation || []
+        }));
+        setSelectedVariations(variationsWithLibelles);
+      } else {
+        setSelectedVariations([]);
       }
+    } else {
+      setFormData({
+        nom_article: "",
+        prix: "",
+        old_price: "",
+        categorie: "",
+        description: "",
+        images: [],
+      });
+      setSelectedVariations([]);
     }
-  }, [initialData]);
+  }, [initialData, isEdit]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -92,7 +90,6 @@ const RegisterProduitsModal = ({
 
   const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 
-  // Variants d'animation
   const modalVariants = {
     hidden: {
       opacity: 0,
@@ -171,7 +168,6 @@ const RegisterProduitsModal = ({
     setFormData((prev) => ({ ...prev, images: updated }));
   };
 
-  // Fonctions pour le redimensionnement d'image
   const startCropping = (index) => {
     setCurrentImageIndex(index);
     setIsCropping(true);
@@ -196,23 +192,16 @@ const RegisterProduitsModal = ({
       const image = new Image();
       
       image.onload = () => {
-        // Dimensions cibles pour le recadrage (carré 500x500)
         const targetSize = 500;
         canvas.width = targetSize;
         canvas.height = targetSize;
         
-        // Calcul des dimensions basées sur l'échelle
         const scaledWidth = image.width * cropScale;
         const scaledHeight = image.height * cropScale;
-        
-        // Centrer l'image redimensionnée
         const x = (image.width - scaledWidth) / 2;
         const y = (image.height - scaledHeight) / 2;
         
-        // Effacer le canvas
         ctx.clearRect(0, 0, targetSize, targetSize);
-        
-        // Dessiner l'image redimensionnée
         ctx.drawImage(
           image,
           Math.max(0, x), Math.max(0, y), 
@@ -221,7 +210,6 @@ const RegisterProduitsModal = ({
           0, 0, targetSize, targetSize
         );
         
-        // Convertir en blob
         canvas.toBlob((blob) => {
           if (!blob) {
             toast.error("Erreur lors de la conversion de l'image");
@@ -243,42 +231,70 @@ const RegisterProduitsModal = ({
         }, 'image/jpeg', 0.9);
       };
       
-      image.onerror = () => {
-        toast.error("Erreur lors du chargement de l'image");
-      };
-      
+      image.onerror = () => toast.error("Erreur lors du chargement de l'image");
       image.src = formData.images[currentImageIndex].url;
     } catch (error) {
-      console.error("Erreur lors du redimensionnement:", error);
       toast.error("Erreur lors du redimensionnement de l'image");
     }
   };
 
-  const handleZoomIn = () => {
-    setCropScale(prev => Math.min(prev + 0.2, 3));
-  };
-
-  const handleZoomOut = () => {
-    setCropScale(prev => Math.max(prev - 0.2, 0.5));
-  };
-
-  const resetCrop = () => {
-    setCropScale(1);
-  };
+  const handleZoomIn = () => setCropScale(prev => Math.min(prev + 0.2, 3));
+  const handleZoomOut = () => setCropScale(prev => Math.max(prev - 0.2, 0.5));
+  const resetCrop = () => setCropScale(1);
 
   const handleAddVariation = () => {
-    setSelectedVariations([...selectedVariations, ""]);
+    setSelectedVariations(prev => [...prev, {
+      variationId: "",
+      selectedLibelles: []
+    }]);
   };
   
-  const handleVariationChange = (index, value) => {
+  const handleVariationChange = (index, variationId) => {
     const updatedVariations = [...selectedVariations];
-    updatedVariations[index] = value;
+    updatedVariations[index] = {
+      variationId,
+      selectedLibelles: []
+    };
     setSelectedVariations(updatedVariations);
   };
   
   const handleRemoveVariation = (index) => {
     const updatedVariations = selectedVariations.filter((_, i) => i !== index);
     setSelectedVariations(updatedVariations);
+  };
+
+  const handleLibelleToggle = (variationIndex, libelle) => {
+    const updatedVariations = [...selectedVariations];
+    const variation = updatedVariations[variationIndex];
+    
+    if (!variation) return;
+    
+    if (variation.selectedLibelles.includes(libelle)) {
+      variation.selectedLibelles = variation.selectedLibelles.filter(l => l !== libelle);
+    } else {
+      variation.selectedLibelles.push(libelle);
+    }
+    
+    setSelectedVariations(updatedVariations);
+  };
+
+  const isColorVariation = (variationId) => {
+    if (!variationId) return false;
+    const variation = variationsBoutique.find(v => v.hashid === variationId);
+    return variation?.nom_variation?.toLowerCase().includes('couleur') || 
+           variation?.nom_variation?.toLowerCase().includes('color');
+  };
+
+  const getVariationName = (variationId) => {
+    if (!variationId) return "";
+    const variation = variationsBoutique.find(v => v.hashid === variationId);
+    return variation?.nom_variation || "";
+  };
+
+  const getVariationLibelles = (variationId) => {
+    if (!variationId) return [];
+    const variation = variationsBoutique.find(v => v.hashid === variationId);
+    return variation?.lib_variation || [];
   };
 
   const handleSubmit = async (e) => {
@@ -294,15 +310,23 @@ const RegisterProduitsModal = ({
         formDataToSend.append("id_categories[]", formData.categorie);
       }
       
-      selectedVariations.forEach(variationId => {
-        if (variationId) {
-          formDataToSend.append("id_variations[]", variationId);
+      selectedVariations.forEach(variation => {
+        if (variation.variationId) {
+          formDataToSend.append("id_variations[]", variation.variationId);
+          
+          if (variation.selectedLibelles.length > 0) {
+            variation.selectedLibelles.forEach(libelle => {
+              formDataToSend.append(`libelles[${variation.variationId}][]`, libelle);
+            });
+          }
         }
       });
 
       formData.images.forEach((img) => {
         if (img.file) {
           formDataToSend.append("images[]", img.file);
+        } else if (img.url && !img.url.startsWith('blob:')) {
+          formDataToSend.append("existing_images[]", img.url);
         }
       });
       
@@ -317,9 +341,9 @@ const RegisterProduitsModal = ({
         await addProduit(formDataToSend);
         toast.success("Produit ajouté avec succès !");
       }
+      
       onClose();
     } catch (err) {
-      console.error("Erreur détaillée:", err);
       toast.error(err.response?.data?.message || "Erreur lors de l'opération");
     } finally {
       setIsSubmitting(false);
@@ -341,7 +365,6 @@ const RegisterProduitsModal = ({
           variants={overlayVariants}
         />
 
-        {/* Modal de redimensionnement d'image */}
         <AnimatePresence>
           {isCropping && currentImageIndex !== null && (
             <motion.div
@@ -369,7 +392,6 @@ const RegisterProduitsModal = ({
                 </div>
                 
                 <div className="p-6">
-                  {/* Aperçu de l'image avec zoom */}
                   <div className="relative mb-4 border-2 border-dashed border-emerald-200 rounded-lg overflow-hidden max-h-96 flex items-center justify-center bg-gray-50 p-4">
                     <div className="relative overflow-hidden rounded-lg">
                       <img
@@ -383,7 +405,6 @@ const RegisterProduitsModal = ({
                       />
                     </div>
                     
-                    {/* Cadre de recadrage */}
                     <div className="absolute inset-4 border-2 border-white border-dashed pointer-events-none rounded-lg">
                       <div className="absolute top-2 left-2 text-white text-sm bg-black/70 px-2 py-1 rounded">
                         Zoom: {Math.round(cropScale * 100)}%
@@ -393,7 +414,6 @@ const RegisterProduitsModal = ({
                   
                   <canvas ref={canvasRef} className="hidden" />
                   
-                  {/* Contrôles de zoom */}
                   <div className="flex flex-wrap gap-3 mb-4 justify-center">
                     <motion.button
                       onClick={handleZoomOut}
@@ -465,12 +485,10 @@ const RegisterProduitsModal = ({
           )}
         </AnimatePresence>
 
-        {/* Modal principal */}
         <motion.div
           className="relative z-[10000] bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-emerald-100"
           variants={modalVariants}
         >
-          {/* En-tête */}
           <div className="flex justify-between items-center p-6 border-b border-emerald-100 bg-white sticky top-0">
             <div className="flex items-center gap-4">
               <motion.div
@@ -509,7 +527,6 @@ const RegisterProduitsModal = ({
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.6 }}
           >
-            {/* Nom produit */}
             <motion.div variants={itemVariants}>
               <label className="block text-sm font-semibold text-emerald-800 mb-2">
                 Nom du produit <span className="text-red-500">*</span>
@@ -527,7 +544,6 @@ const RegisterProduitsModal = ({
               />
             </motion.div>
 
-            {/* Prix et ancien prix */}
             <motion.div 
               className="grid grid-cols-1 md:grid-cols-2 gap-4"
               variants={itemVariants}
@@ -570,7 +586,6 @@ const RegisterProduitsModal = ({
               </div>
             </motion.div>
 
-            {/* Catégorie */}
             <motion.div variants={itemVariants} transition={{ delay: 0.2 }}>
               <label className="block text-sm font-semibold text-emerald-800 mb-2">
                 Catégorie <span className="text-red-500">*</span>
@@ -603,7 +618,6 @@ const RegisterProduitsModal = ({
               )}
             </motion.div>
 
-            {/* Description */}
             <motion.div variants={itemVariants} transition={{ delay: 0.3 }}>
               <label className="block text-sm font-semibold text-emerald-800 mb-2">
                 Description
@@ -620,7 +634,6 @@ const RegisterProduitsModal = ({
               />
             </motion.div>
             
-            {/* Variations */}
             <motion.div variants={itemVariants} transition={{ delay: 0.4 }}>
               <div className="flex justify-between items-center mb-3">
                 <label className="block text-sm font-semibold text-emerald-800">
@@ -639,54 +652,100 @@ const RegisterProduitsModal = ({
                 </motion.button>
               </div>
               
-              {loadingVariations ? (
+              {variationsLoading ? (
                 <div className="text-emerald-600/70 text-sm p-4 bg-emerald-50 rounded-xl border border-emerald-100">
                   Chargement des variations...
                 </div>
-              ) : shopVariations.length === 0 ? (
+              ) : variationsBoutique.length === 0 ? (
                 <div className="text-emerald-600/70 text-sm p-4 bg-amber-50 rounded-xl border border-amber-100">
                   Aucune variation disponible. Veuillez d'abord créer des variations dans l'onglet Variations.
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {selectedVariations.length === 0 ? (
                     <div className="text-emerald-600/70 text-sm p-4 bg-emerald-50 rounded-xl border border-emerald-100">
                       Cliquez sur "Ajouter une variation" pour sélectionner des variations pour ce produit.
                     </div>
                   ) : (
-                    selectedVariations.map((variationId, index) => (
+                    selectedVariations.map((variation, index) => (
                       <motion.div 
                         key={index} 
-                        className="flex items-center gap-3 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100"
+                        className="p-4 bg-emerald-50/50 rounded-xl border border-emerald-100"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.5 + (index * 0.1) }}
                       >
-                        <motion.select
-                          value={variationId}
-                          onChange={(e) => handleVariationChange(index, e.target.value)}
-                          className="flex-1 px-4 py-2 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 appearance-none bg-white"
-                          whileFocus={{ scale: 1.01 }}
-                        >
-                          <option value="">Sélectionner une variation</option>
-                          {shopVariations.map((variation) => (
-                            <option key={variation.hashid} value={variation.hashid}>
-                              {variation.nom_variation} ({variation.lib_variation?.join(", ") || "Aucun libellé"})
-                            </option>
-                          ))}
-                        </motion.select>
-                        <div className="relative pointer-events-none">
-                          <ChevronDown className="h-4 w-4 text-emerald-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
+                        <div className="flex items-center gap-3 mb-3">
+                          <motion.select
+                            value={variation.variationId}
+                            onChange={(e) => handleVariationChange(index, e.target.value)}
+                            className="flex-1 px-4 py-2 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 transition-all duration-300 appearance-none bg-white"
+                            whileFocus={{ scale: 1.01 }}
+                          >
+                            <option value="">Sélectionner une variation</option>
+                            {variationsBoutique.map((shopVariation) => (
+                              <option key={shopVariation.hashid} value={shopVariation.hashid}>
+                                {shopVariation.nom_variation} 
+                                {shopVariation.lib_variation?.length > 0 && 
+                                  ` (${shopVariation.lib_variation.length} options)`
+                                }
+                              </option>
+                            ))}
+                          </motion.select>
+                          
+                          <div className="relative pointer-events-none">
+                            <ChevronDown className="h-4 w-4 text-emerald-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
+                          </div>
+                          
+                          <motion.button
+                            type="button"
+                            onClick={() => handleRemoveVariation(index)}
+                            className="p-2 text-emerald-400 hover:text-red-500 transition-colors duration-300"
+                            whileHover={{ scale: 1.2 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <X className="h-5 w-5" />
+                          </motion.button>
                         </div>
-                        <motion.button
-                          type="button"
-                          onClick={() => handleRemoveVariation(index)}
-                          className="p-2 text-emerald-400 hover:text-red-500 transition-colors duration-300"
-                          whileHover={{ scale: 1.2 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <X className="h-5 w-5" />
-                        </motion.button>
+
+                        {variation.variationId && (
+                          <div className="space-y-2 ml-4">
+                            <label className="block text-sm text-emerald-700 font-medium">
+                              Sélectionnez les options pour {getVariationName(variation.variationId)}:
+                            </label>
+                            
+                            <div className="flex flex-wrap gap-2">
+                              {getVariationLibelles(variation.variationId).map((libelle, libelleIndex) => (
+                                <motion.button
+                                  key={libelleIndex}
+                                  type="button"
+                                  onClick={() => handleLibelleToggle(index, libelle)}
+                                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                                    variation.selectedLibelles.includes(libelle)
+                                      ? 'bg-emerald-500 text-white border-emerald-500'
+                                      : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50'
+                                  }`}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                >
+                                  {isColorVariation(variation.variationId) && (
+                                    <div 
+                                      className="w-4 h-4 rounded border border-emerald-200"
+                                      style={{ backgroundColor: libelle }}
+                                    />
+                                  )}
+                                  {libelle}
+                                </motion.button>
+                              ))}
+                            </div>
+                            
+                            {variation.selectedLibelles.length > 0 && (
+                              <div className="text-sm text-emerald-600 mt-2">
+                                {variation.selectedLibelles.length} option(s) sélectionnée(s)
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </motion.div>
                     ))
                   )}
@@ -694,7 +753,6 @@ const RegisterProduitsModal = ({
               )}
             </motion.div>
 
-            {/* Images avec option de redimensionnement */}
             <motion.div variants={itemVariants} transition={{ delay: 0.5 }}>
               <label className="block text-sm font-semibold text-emerald-800 mb-2">
                 Images du produit{" "}
@@ -752,7 +810,6 @@ const RegisterProduitsModal = ({
                         className="object-cover w-full h-full"
                       />
                       
-                      {/* Overlay avec boutons d'action */}
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-1">
                         <motion.button
                           type="button"
@@ -781,7 +838,6 @@ const RegisterProduitsModal = ({
               )}
             </motion.div>
 
-            {/* Boutons */}
             <motion.div 
               className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-emerald-100"
               variants={itemVariants}

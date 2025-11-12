@@ -1,81 +1,114 @@
 // src/stores/useVariationStore.js
 import { create } from "zustand";
 import toast from "react-hot-toast";
-import VariationLibelleService from "../services/variationLibelle.service";
+import { VariationLibelleService } from "../services/variationLibelle.service";
 
 const useVariationStore = create((set, get) => ({
-  variations: [],
+  variations: [], // Variations simples depuis /api/variations
+  variationsBoutique: [], // Variations avec libellés depuis /api/variations/boutique
   loading: false,
   adding: false,
   deleting: false,
 
+  // Pour le formulaire d'ajout de libellés - variations simples
   fetchVariations: async () => {
     set({ loading: true });
     try {
-      const variations = await VariationLibelleService.listerVariations();
-      // Normalize keys: ensure libellés dans "lib_variation" ou "valeurs"
-      const normalized = variations.map((v) => ({
-        ...v,
-        lib_variation: v.lib_variation || v.valeurs || [],
-      }));
-      set({ variations: normalized });
+      const response = await VariationLibelleService.listerVariations();
+      
+      if (response.success) {
+        set({ variations: response.data || [] });
+      } else {
+        toast.error(response.message || "Erreur lors du chargement des variations");
+        set({ variations: [] });
+      }
     } catch (err) {
       toast.error(err.message || "Impossible de charger les variations.");
+      set({ variations: [] });
     } finally {
       set({ loading: false });
     }
   },
 
-  addLibelles: async (variationId, libelles = []) => {
-    if (!variationId || !Array.isArray(libelles) || libelles.length === 0) {
+  // Pour l'administration - variations avec libellés
+  fetchVariationsBoutique: async () => {
+    set({ loading: true });
+    try {
+      const response = await VariationLibelleService.listerVariationsBoutique();
+      
+      if (response.success) {
+        const normalized = (response.data || []).map((v) => ({
+          ...v,
+          lib_variation: v.lib_variation || [],
+        }));
+        set({ variationsBoutique: normalized });
+      } else {
+        toast.error(response.message || "Erreur lors du chargement des variations boutique");
+        set({ variationsBoutique: [] });
+      }
+    } catch (err) {
+      toast.error(err.message || "Impossible de charger les variations boutique.");
+      set({ variationsBoutique: [] });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  addLibelles: async (hashid, libelles = []) => {
+    if (!hashid || !Array.isArray(libelles) || libelles.length === 0) {
       toast.error("Aucun libellé à ajouter.");
       return null;
     }
     set({ adding: true });
     try {
-      const payload = { variation_id: variationId, lib_variation: libelles };
+      const payload = { variation_id: hashid, lib_variation: libelles };
       const res = await VariationLibelleService.ajouterLibellesVariation(payload);
-      toast.success(res.message || "Libellés ajoutés.");
-      // Mettre à jour le store : remplacer/ajouter la variation
-      const current = get().variations.slice();
-      const idx = current.findIndex((v) => v.hashid === res.hashid);
-      const updatedVariation = {
-        ...current[idx],
-        nom_variation: res.nom_variation || current[idx]?.nom_variation,
-        lib_variation: res.lib_variation || [],
-        hashid: res.hashid,
-      };
-      if (idx === -1) current.push(updatedVariation);
-      else current[idx] = updatedVariation;
-      set({ variations: current });
-      return updatedVariation;
+      
+      if (res.success) {
+        toast.success(res.message || "Libellés ajoutés.");
+        // Mettre à jour les stores
+        await get().fetchVariationsBoutique();
+        return res;
+      } else {
+        // Si l'API retourne success: false mais avec un message spécifique
+        if (res.message === "Toutes les variations ont des libellés.") {
+          toast.success("Les libellés sont déjà configurés pour cette variation.");
+          await get().fetchVariationsBoutique();
+          return { ...res, success: true };
+        }
+        toast.error(res.message || "Erreur lors de l'ajout des libellés.");
+        throw new Error(res.message);
+      }
     } catch (err) {
-      toast.error(err.message || "Erreur lors de l'ajout des libellés.");
+      // Ne pas afficher d'erreur toast si c'est le message "Toutes les variations ont des libellés"
+      if (err.message !== "Toutes les variations ont des libellés.") {
+        toast.error(err.message || "Erreur lors de l'ajout des libellés.");
+      }
       throw err;
     } finally {
       set({ adding: false });
     }
   },
 
-  updateVariation: async (variationId, libelles = []) => {
+  updateVariation: async (hashid, libelles = []) => {
     set({ adding: true });
     try {
-      const payload = { variation_id: variationId, lib_variation: libelles };
-      const res = await VariationLibelleService.modifierVariation(payload);
-      toast.success(res.message || "Variation modifiée.");
-      // res.data is an array per ton exemple
-      const returned = Array.isArray(res.data) ? res.data[0] : res.data;
-      const current = get().variations.slice();
-      const idx = current.findIndex((v) => v.hashid === returned.hashid || v.hashid === variationId);
-      const updatedVariation = {
-        ...current[idx],
-        ...returned,
-        lib_variation: returned.lib_variation || [],
+      // CORRECTION : Envoyer les données dans le format attendu par l'API
+      const payload = { 
+        nom_variation: get().variationsBoutique.find(v => v.hashid === hashid)?.nom_variation,
+        lib_variation: libelles 
       };
-      if (idx === -1) current.push(updatedVariation);
-      else current[idx] = updatedVariation;
-      set({ variations: current });
-      return updatedVariation;
+      const res = await VariationLibelleService.modifierVariation(hashid, payload);
+      
+      if (res.success) {
+        toast.success(res.message || "Variation modifiée.");
+        // Mettre à jour le store
+        await get().fetchVariationsBoutique();
+        return res;
+      } else {
+        toast.error(res.message || "Erreur lors de la modification.");
+        throw new Error(res.message);
+      }
     } catch (err) {
       toast.error(err.message || "Erreur lors de la modification.");
       throw err;
@@ -89,9 +122,17 @@ const useVariationStore = create((set, get) => ({
     set({ deleting: true });
     try {
       const res = await VariationLibelleService.supprimerVariation(hashid);
-      toast.success(res.message || "Variation supprimée.");
-      set((state) => ({ variations: state.variations.filter((v) => v.hashid !== hashid) }));
-      return res;
+      
+      if (res.success) {
+        toast.success(res.message || "Variation supprimée.");
+        // Mettre à jour les stores
+        await get().fetchVariationsBoutique();
+        await get().fetchVariations();
+        return res;
+      } else {
+        toast.error(res.message || "Erreur lors de la suppression.");
+        throw new Error(res.message);
+      }
     } catch (err) {
       toast.error(err.message || "Erreur lors de la suppression.");
       throw err;

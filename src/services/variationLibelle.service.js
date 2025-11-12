@@ -12,36 +12,46 @@ const ajouterLibellesVariation = async (data) => {
 
 const listerVariations = async () => {
     try {
-        const response = await axiosInstance.get("/api/variations/boutique");
-        return response.data || [];
-    } catch (error) {
-        throw error.response?.data || { success: false, message: error.message || "Erreur réseau" };
-    }
-};
-
-const modifierVariation = async (data) => {
-    try {
-        const response = await axiosInstance.post("/api/variation/update", data);
+        const response = await axiosInstance.get("/api/variations");
         return response.data;
     } catch (error) {
         throw error.response?.data || { success: false, message: error.message || "Erreur réseau" };
     }
 };
 
+const listerVariationsBoutique = async () => {
+    try {
+        const response = await axiosInstance.get("/api/variations/boutique");
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || { success: false, message: error.message || "Erreur réseau" };
+    }
+};
+
+// CORRECTION : Utiliser la bonne route pour la modification
+const modifierVariation = async (hashid, data) => {
+    try {
+        const response = await axiosInstance.post(`/api/variation/${hashid}/update`, data);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || { success: false, message: error.message || "Erreur réseau" };
+    }
+};
+
+// CORRECTION : Utiliser la bonne route pour la suppression
 const supprimerVariation = async (hashid) => {
     try {
-        const response = await axiosInstance.post(`/api/variation/delete/${hashid}`);
+        const response = await axiosInstance.post(`/api/variation/${hashid}/delete`);
         return response.data;
     } catch (error) {
         throw error.response?.data || { success: false, message: error.message || "Erreur réseau" };
     }
 };
 
-const VariationLibelleService = {
+export const VariationLibelleService = {
     ajouterLibellesVariation,
     listerVariations,
+    listerVariationsBoutique,
     modifierVariation,
-    supprimerVariation,
+    supprimerVariation
 };
-
-export default VariationLibelleService;

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import useCategorieStore from '../../../stores/categorie.store';
 import { motion } from 'framer-motion';
-import { Folder, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Folder, Image as ImageIcon } from 'lucide-react';
 
 const CategoriesList = () => {
   const { categories, loading, error, fetchCategories } = useCategorieStore();
@@ -23,32 +23,67 @@ const CategoriesList = () => {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
+      y: 0,
       transition: {
         duration: 0.5,
         ease: "easeOut"
       }
+    },
+    hover: {
+      y: -5,
+      scale: 1.02,
+      transition: {
+        duration: 0.2,
+        ease: "easeInOut"
+      }
     }
   };
 
+  // Skeleton loader for categories
+  const CategorySkeleton = () => (
+    <div className="border border-emerald-100 rounded-xl p-4 bg-white/50 animate-pulse">
+      <div className="flex items-center space-x-3">
+        <div className="w-12 h-12 bg-emerald-200 rounded-lg flex-shrink-0"></div>
+        
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="h-4 bg-emerald-200 rounded w-3/4"></div>
+          <div className="h-3 bg-emerald-200 rounded w-1/2"></div>
+        </div>
+      </div>
+
+      {/* <div className="mt-3 pt-2 border-t border-emerald-100">
+        <div className="flex justify-between items-center">
+          <div className="h-3 bg-emerald-200 rounded w-20"></div>
+          <div className="w-2 h-2 bg-emerald-200 rounded-full"></div>
+        </div>
+      </div> */}
+    </div>
+  );
+
   if (loading) return (
     <motion.div 
-      className="flex justify-center items-center py-12"
+      className="p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100/60"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.5 }}
     >
-      <div className="text-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="mx-auto mb-4"
-        >
-          <Loader2 className="h-8 w-8 text-emerald-500" />
-        </motion.div>
-        <p className="text-emerald-600/80 font-medium">Chargement des catégories...</p>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-emerald-100 rounded-xl">
+          <Folder className="h-6 w-6 text-emerald-600" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-emerald-900">Chargement des catégories</h2>
+          <p className="text-emerald-600/70 text-sm">Préparation de votre liste...</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {[...Array(categories.length)].map((_, index) => (
+          <CategorySkeleton key={index} />
+        ))}
       </div>
     </motion.div>
   );
@@ -104,12 +139,11 @@ const CategoriesList = () => {
           initial="hidden"
           animate="visible"
         >
-          {categories.map((categorie, index) => (
+          {categories.map((categorie) => (
             <motion.div 
               key={categorie.hashid} 
               className="border border-emerald-100 rounded-xl p-4 bg-white/50 hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md"
               variants={itemVariants}
-              custom={index}
               whileHover="hover"
             >
               <div className="flex items-center space-x-3">
@@ -135,16 +169,10 @@ const CategoriesList = () => {
                   <h3 className="font-semibold text-emerald-900 text-sm truncate">
                     {categorie.nom_categorie}
                   </h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
-                    <p className="text-xs text-emerald-600/70 font-medium truncate">
-                      ID: {categorie.hashid}
-                    </p>
-                  </div>
                 </div>
               </div>
 
-              {/* Badge indicateur */}
+              {/* Badge indicateur
               <motion.div 
                 className="mt-3 pt-2 border-t border-emerald-100"
                 initial={{ opacity: 0 }}
@@ -163,7 +191,7 @@ const CategoriesList = () => {
                     transition={{ duration: 0.2 }}
                   />
                 </div>
-              </motion.div>
+              </motion.div> */}
             </motion.div>
           ))}
         </motion.div>
