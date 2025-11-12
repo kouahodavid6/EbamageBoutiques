@@ -12,7 +12,6 @@ import {
     MapPin,
     CheckCircle,
     XCircle,
-    Truck,
     Eye,
     DollarSign,
 } from "lucide-react";
@@ -86,7 +85,7 @@ const Commandes = () => {
             const matchesStatut = !localFilters.statut || commande.statut === localFilters.statut;
             const matchesLocalisation = !localFilters.localisation || 
                 (commande.localisation?.commune?.toLowerCase().includes(localFilters.localisation.toLowerCase()) ||
-                 commande.localisation?.ville?.toLowerCase().includes(localFilters.localisation.toLowerCase()));
+                    commande.localisation?.ville?.toLowerCase().includes(localFilters.localisation.toLowerCase()));
 
             return matchesSearch && matchesStatut && matchesLocalisation;
         } catch (e) {
@@ -122,13 +121,6 @@ const Commandes = () => {
                         <XCircle className="w-3 h-3" /> {status}
                     </span>
                 );
-            case "En cours":
-            case "En livraison":
-                return (
-                    <span className={`bg-blue-100 text-blue-800 ${baseClasses}`}>
-                        <Truck className="w-3 h-3" /> {status}
-                    </span>
-                );
             case "Confirmée":
                 return (
                     <span className={`bg-green-100 text-green-800 ${baseClasses}`}>
@@ -158,7 +150,6 @@ const Commandes = () => {
         { value: '', label: 'Tous les statuts' },
         { value: 'En attente', label: 'En attente' },
         { value: 'Confirmée', label: 'Confirmée' },
-        { value: 'En livraison', label: 'En livraison' },
         { value: 'Livrée', label: 'Livrée' },
         { value: 'Annulée', label: 'Annulée' }
     ];

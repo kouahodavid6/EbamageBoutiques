@@ -24,24 +24,31 @@ const CommandeDetailsModal = ({ commande, isOpen, onClose }) => {
 
     switch (status) {
       case "En attente":
-        return (
-          <span className={`bg-amber-100 text-amber-800 ${baseClasses}`}>
-            <Clock className="w-3 h-3" /> {status}
-          </span>
-        );
+          return (
+              <span className={`bg-amber-100 text-amber-800 ${baseClasses}`}>
+                  <Clock className="w-3 h-3" /> {status}
+              </span>
+          );
+      case "Livré":
       case "Livrée":
-      case "Confirmée":
-        return (
-          <span className={`bg-emerald-100 text-emerald-800 ${baseClasses}`}>
-            <CheckCircle className="w-3 h-3" /> {status}
-          </span>
-        );
+          return (
+              <span className={`bg-emerald-100 text-emerald-800 ${baseClasses}`}>
+                  <CheckCircle className="w-3 h-3" /> {status}
+              </span>
+          );
+      case "Annulé":
       case "Annulée":
-        return (
-          <span className={`bg-red-100 text-red-800 ${baseClasses}`}>
-            <XCircle className="w-3 h-3" /> {status}
-          </span>
-        );
+          return (
+              <span className={`bg-red-100 text-red-800 ${baseClasses}`}>
+                  <XCircle className="w-3 h-3" /> {status}
+              </span>
+          );
+      case "Confirmée":
+          return (
+              <span className={`bg-green-100 text-green-800 ${baseClasses}`}>
+                  <CheckCircle className="w-3 h-3" /> {status}
+              </span>
+          );
       default:
         return (
           <span className={`bg-gray-100 text-gray-800 ${baseClasses}`}>
