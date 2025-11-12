@@ -22,6 +22,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hot-toast": "^2.5.2",
+    "react-image-crop": "^11.0.10",
     "react-router-dom": "^7.6.0",
     "uuid": "^11.1.0",
     "zustand": "^5.0.5"

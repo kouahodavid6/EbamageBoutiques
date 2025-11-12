@@ -1,10 +1,46 @@
 import toast from "react-hot-toast";
 import { useState, useEffect, useRef } from "react";
-import { Image, X, Plus, ChevronDown, Upload, Package, Crop, RotateCcw, Check, Palette } from "lucide-react";
+import { Image, X, Plus, ChevronDown, Upload, Package, Crop, RotateCcw, Check, Palette, Save } from "lucide-react";
+import ReactCrop from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 import useProduitStore from "../../../stores/produit.store";
 import useCategorieStore from "../../../stores/categorie.store";
 import useVariationStore from "../../../stores/variationLibelle.store";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Fonction utilitaire pour obtenir l'image recadrée
+const getCroppedImg = (image, crop, fileName) => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+
+  canvas.width = crop.width;
+  canvas.height = crop.height;
+
+  ctx.drawImage(
+    image,
+    crop.x * scaleX,
+    crop.y * scaleY,
+    crop.width * scaleX,
+    crop.height * scaleY,
+    0,
+    0,
+    crop.width,
+    crop.height
+  );
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        console.error('Canvas is empty');
+        return;
+      }
+      blob.name = fileName;
+      resolve(blob);
+    }, 'image/jpeg', 0.9);
+  });
+};
 
 const RegisterProduitsModal = ({
   initialData,
@@ -33,10 +69,19 @@ const RegisterProduitsModal = ({
   const [selectedVariations, setSelectedVariations] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // États pour react-image-crop (REMPLACENT les anciens états de crop)
   const [isCropping, setIsCropping] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(null);
-  const [cropScale, setCropScale] = useState(1);
-  const canvasRef = useRef(null);
+  const [crop, setCrop] = useState({
+    unit: 'px',
+    width: 300,
+    height: 300,
+    x: 0,
+    y: 0,
+  });
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const [imageRef, setImageRef] = useState(null);
+  const previewCanvasRef = useRef(null);
 
   useEffect(() => {
     fetchCategories();
@@ -87,6 +132,40 @@ const RegisterProduitsModal = ({
       });
     };
   }, [formData.images]);
+
+  // Effet pour générer le preview du canvas
+  useEffect(() => {
+    if (!completedCrop || !imageRef || !previewCanvasRef.current) {
+      return;
+    }
+
+    const image = imageRef;
+    const canvas = previewCanvasRef.current;
+    const crop = completedCrop;
+
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    const ctx = canvas.getContext('2d');
+    const pixelRatio = window.devicePixelRatio;
+
+    canvas.width = crop.width * pixelRatio;
+    canvas.height = crop.height * pixelRatio;
+
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.imageSmoothingQuality = 'high';
+
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width,
+      crop.height
+    );
+  }, [completedCrop]);
 
   const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 
@@ -169,78 +248,90 @@ const RegisterProduitsModal = ({
   };
 
   const startCropping = (index) => {
+    if (!formData.images[index] || !formData.images[index].url) {
+      toast.error("Image non disponible pour le recadrage");
+      return;
+    }
+    
     setCurrentImageIndex(index);
     setIsCropping(true);
-    setCropScale(1);
+    // Réinitialiser le crop
+    setCrop({
+      unit: 'px',
+      width: 300,
+      height: 300,
+      x: 0,
+      y: 0,
+    });
+    setCompletedCrop(null);
   };
 
   const cancelCropping = () => {
     setIsCropping(false);
     setCurrentImageIndex(null);
-    setCropScale(1);
+    setCrop({
+      unit: 'px',
+      width: 300,
+      height: 300,
+      x: 0,
+      y: 0,
+    });
+    setCompletedCrop(null);
   };
 
-  const applyCrop = () => {
-    if (currentImageIndex === null || !canvasRef.current) {
-      toast.error("Erreur lors du redimensionnement");
+  const applyCrop = async () => {
+    if (currentImageIndex === null || !imageRef || !completedCrop || !completedCrop.width || !completedCrop.height) {
+      toast.error("Veuillez sélectionner une zone à recadrer");
       return;
     }
 
     try {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      const image = new Image();
-      
-      image.onload = () => {
-        const targetSize = 500;
-        canvas.width = targetSize;
-        canvas.height = targetSize;
-        
-        const scaledWidth = image.width * cropScale;
-        const scaledHeight = image.height * cropScale;
-        const x = (image.width - scaledWidth) / 2;
-        const y = (image.height - scaledHeight) / 2;
-        
-        ctx.clearRect(0, 0, targetSize, targetSize);
-        ctx.drawImage(
-          image,
-          Math.max(0, x), Math.max(0, y), 
-          Math.min(scaledWidth, image.width), 
-          Math.min(scaledHeight, image.height),
-          0, 0, targetSize, targetSize
-        );
-        
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            toast.error("Erreur lors de la conversion de l'image");
-            return;
-          }
+      const croppedImageBlob = await getCroppedImg(
+        imageRef,
+        completedCrop,
+        formData.images[currentImageIndex].file?.name || `cropped-${Date.now()}.jpg`
+      );
 
-          const newUrl = URL.createObjectURL(blob);
-          const updatedImages = [...formData.images];
-          updatedImages[currentImageIndex] = {
-            file: new File([blob], `cropped-image-${Date.now()}.jpg`, { type: 'image/jpeg' }),
-            url: newUrl
-          };
-          
-          setFormData(prev => ({ ...prev, images: updatedImages }));
-          setIsCropping(false);
-          setCurrentImageIndex(null);
-          setCropScale(1);
-          toast.success("Image redimensionnée avec succès !");
-        }, 'image/jpeg', 0.9);
+      const newUrl = URL.createObjectURL(croppedImageBlob);
+      const updatedImages = [...formData.images];
+      const originalFile = formData.images[currentImageIndex].file;
+      
+      updatedImages[currentImageIndex] = {
+        file: new File([croppedImageBlob], originalFile?.name || `cropped-${Date.now()}.jpg`, {
+          type: 'image/jpeg',
+          lastModified: Date.now()
+        }),
+        url: newUrl
       };
       
-      image.onerror = () => toast.error("Erreur lors du chargement de l'image");
-      image.src = formData.images[currentImageIndex].url;
+      setFormData(prev => ({ ...prev, images: updatedImages }));
+      setIsCropping(false);
+      setCurrentImageIndex(null);
+      setCrop({
+        unit: 'px',
+        width: 300,
+        height: 300,
+        x: 0,
+        y: 0,
+      });
+      setCompletedCrop(null);
+      
+      toast.success("Image recadrée avec succès !");
     } catch (error) {
-      toast.error("Erreur lors du redimensionnement de l'image");
+      console.error("Erreur lors du recadrage:", error);
+      toast.error("Erreur lors du recadrage de l'image");
     }
   };
 
-  const handleZoomIn = () => setCropScale(prev => Math.min(prev + 0.2, 3));
-  const handleZoomOut = () => setCropScale(prev => Math.max(prev - 0.2, 0.5));
-  const resetCrop = () => setCropScale(1);
+  const resetCrop = () => {
+    setCrop({
+      unit: 'px',
+      width: 300,
+      height: 300,
+      x: 0,
+      y: 0,
+    });
+  };
 
   const handleAddVariation = () => {
     setSelectedVariations(prev => [...prev, {
@@ -374,14 +465,14 @@ const RegisterProduitsModal = ({
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+                className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] flex flex-col"
                 initial={{ scale: 0.8, y: 50 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.8, y: 50 }}
               >
-                <div className="flex justify-between items-center p-4 border-b">
+                <div className="flex justify-between items-center p-4 border-b shrink-0">
                   <h3 className="text-lg font-semibold text-emerald-900">
-                    Redimensionner l'image
+                    Recadrer l'image
                   </h3>
                   <button
                     onClick={cancelCropping}
@@ -391,92 +482,131 @@ const RegisterProduitsModal = ({
                   </button>
                 </div>
                 
-                <div className="p-6">
-                  <div className="relative mb-4 border-2 border-dashed border-emerald-200 rounded-lg overflow-hidden max-h-96 flex items-center justify-center bg-gray-50 p-4">
-                    <div className="relative overflow-hidden rounded-lg">
-                      <img
-                        src={formData.images[currentImageIndex].url}
-                        alt="À redimensionner"
-                        className="max-w-full max-h-80 transition-transform duration-300"
-                        style={{
-                          transform: `scale(${cropScale})`,
-                          transformOrigin: 'center'
-                        }}
-                      />
+                <div className="flex-1 overflow-y-auto p-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Zone de recadrage avec react-image-crop */}
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-emerald-800">Zone de recadrage</h4>
+                      <div className="border-2 border-dashed border-emerald-200 rounded-lg overflow-hidden bg-gray-50 p-4 max-h-96 flex items-center justify-center">
+                        {formData.images[currentImageIndex]?.url && (
+                          <ReactCrop
+                            crop={crop}
+                            onChange={(_, percentCrop) => setCrop(percentCrop)}
+                            onComplete={(c) => setCompletedCrop(c)}
+                            aspect={1} // Ratio carré
+                            minWidth={100}
+                            minHeight={100}
+                            className="max-h-80"
+                          >
+                            <img
+                              ref={setImageRef}
+                              src={formData.images[currentImageIndex].url}
+                              alt="À recadrer"
+                              onLoad={(e) => {
+                                const { width, height } = e.currentTarget;
+                                // Ajuster le crop initial pour s'adapter à l'image
+                                const minDimension = Math.min(width, height);
+                                const cropSize = Math.min(300, minDimension * 0.8);
+                                
+                                setCrop({
+                                  unit: 'px',
+                                  width: cropSize,
+                                  height: cropSize,
+                                  x: (width - cropSize) / 2,
+                                  y: (height - cropSize) / 2,
+                                });
+                              }}
+                              className="max-w-full max-h-80 object-contain"
+                            />
+                          </ReactCrop>
+                        )}
+                      </div>
+                      
+                      {/* Contrôles de recadrage */}
+                      <div className="bg-emerald-50 rounded-xl p-4">
+                        <div className="flex flex-wrap gap-3 justify-center">
+                          <motion.button
+                            type="button"
+                            onClick={resetCrop}
+                            className="px-4 py-3 bg-white hover:bg-amber-100 text-amber-700 rounded-lg flex items-center gap-2 transition-colors duration-300 font-medium border border-amber-300"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <RotateCcw className="h-5 w-5" />
+                            Réinitialiser
+                          </motion.button>
+                        </div>
+                        
+                        <div className="text-center mt-3">
+                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg">
+                            <span className="font-medium">Format:</span>
+                            <span className="font-bold text-lg">Carré 1:1</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     
-                    <div className="absolute inset-4 border-2 border-white border-dashed pointer-events-none rounded-lg">
-                      <div className="absolute top-2 left-2 text-white text-sm bg-black/70 px-2 py-1 rounded">
-                        Zoom: {Math.round(cropScale * 100)}%
+                    {/* Aperçu du résultat */}
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-emerald-800">Aperçu du résultat</h4>
+                      <div className="border-2 border-dashed border-emerald-200 rounded-lg bg-gray-50 p-4 h-64 flex items-center justify-center">
+                        {completedCrop ? (
+                          <div className="text-center">
+                            <canvas
+                              ref={previewCanvasRef}
+                              className="max-w-full max-h-48 border border-gray-300 rounded shadow-sm"
+                            />
+                            <p className="text-sm text-gray-600 mt-2">
+                              Taille: {completedCrop.width.toFixed(0)}x{completedCrop.height.toFixed(0)}px
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="text-center text-gray-500">
+                            <Crop className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                            <p>Faites glisser pour sélectionner une zone</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+                        <p className="font-medium text-blue-800 mb-1">Instructions :</p>
+                        <ul className="list-disc list-inside space-y-1 text-blue-700">
+                          <li>Faites glisser pour sélectionner la zone à conserver</li>
+                          <li>Redimensionnez en tirant sur les coins</li>
+                          <li>Le format final sera carré (1:1)</li>
+                          <li>L'aperçu montre le résultat final</li>
+                        </ul>
                       </div>
                     </div>
                   </div>
-                  
-                  <canvas ref={canvasRef} className="hidden" />
-                  
-                  <div className="flex flex-wrap gap-3 mb-4 justify-center">
-                    <motion.button
-                      onClick={handleZoomOut}
-                      disabled={cropScale <= 0.5}
-                      className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-300 ${
-                        cropScale <= 0.5 
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-                          : "bg-emerald-100 hover:bg-emerald-200 text-emerald-700"
-                      }`}
-                      whileHover={cropScale > 0.5 ? { scale: 1.05 } : {}}
-                      whileTap={cropScale > 0.5 ? { scale: 0.95 } : {}}
-                    >
-                      <Crop className="h-4 w-4" />
-                      Zoom - 
-                    </motion.button>
-                    
-                    <motion.button
-                      onClick={handleZoomIn}
-                      disabled={cropScale >= 3}
-                      className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-300 ${
-                        cropScale >= 3 
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-                          : "bg-emerald-100 hover:bg-emerald-200 text-emerald-700"
-                      }`}
-                      whileHover={cropScale < 3 ? { scale: 1.05 } : {}}
-                      whileTap={cropScale < 3 ? { scale: 0.95 } : {}}
-                    >
-                      <Crop className="h-4 w-4" />
-                      Zoom +
-                    </motion.button>
-                    
-                    <motion.button
-                      onClick={resetCrop}
-                      className="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg flex items-center gap-2 transition-colors duration-300"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                      Réinitialiser
-                    </motion.button>
-                  </div>
-                  
-                  <div className="text-center text-sm text-gray-600 mb-4">
-                    L'image sera automatiquement recadrée en format carré. Ajustez le zoom pour cadrer votre produit.
-                  </div>
-                  
+                </div>
+                
+                {/* Boutons d'action */}
+                <div className="p-6 border-t bg-white shrink-0">
                   <div className="flex gap-3">
                     <motion.button
+                      type="button"
                       onClick={cancelCropping}
-                      className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors duration-300"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      className="flex-1 px-6 py-4 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium transition-colors duration-300 text-lg"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
                       Annuler
                     </motion.button>
                     <motion.button
+                      type="button"
                       onClick={applyCrop}
-                      className="flex-1 px-6 py-3 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors duration-300"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      disabled={!completedCrop || !completedCrop.width}
+                      className={`flex-1 px-6 py-4 rounded-xl font-medium flex items-center justify-center gap-3 transition-all duration-300 text-lg shadow-lg ${
+                        !completedCrop || !completedCrop.width
+                          ? "bg-gray-400 cursor-not-allowed text-gray-200"
+                          : "bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600"
+                      }`}
+                      whileHover={completedCrop && completedCrop.width ? { scale: 1.02, y: -2 } : {}}
+                      whileTap={completedCrop && completedCrop.width ? { scale: 0.98 } : {}}
                     >
-                      <Check className="h-4 w-4" />
-                      Appliquer
+                      <Save className="h-6 w-6" />
+                      Enregistrer le cadrage
                     </motion.button>
                   </div>
                 </div>
@@ -485,11 +615,12 @@ const RegisterProduitsModal = ({
           )}
         </AnimatePresence>
 
+        {/* Le reste de votre modal principal reste EXACTEMENT comme avant */}
         <motion.div
           className="relative z-[10000] bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-emerald-100"
           variants={modalVariants}
         >
-          <div className="flex justify-between items-center p-6 border-b border-emerald-100 bg-white sticky top-0">
+          <div className="flex justify-between items-center p-6 border-b border-emerald-100 bg-white sticky top-0 z-10">
             <div className="flex items-center gap-4">
               <motion.div
                 className="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100"
@@ -817,7 +948,7 @@ const RegisterProduitsModal = ({
                           className="p-1 bg-white/90 text-emerald-600 rounded-lg hover:bg-white transition-colors duration-300"
                           whileHover={{ scale: 1.2 }}
                           whileTap={{ scale: 0.9 }}
-                          title="Redimensionner"
+                          title="Recadrer"
                         >
                           <Crop className="h-3 w-3" />
                         </motion.button>
