@@ -24,7 +24,7 @@ const Dashboard = () => {
     } = useBoutiqueStore();
 
     const {
-        loading: deviceTokenLoading,
+        // loading: deviceTokenLoading,
         error: deviceTokenError,
         success: deviceTokenSuccess,
         registerDeviceToken,
@@ -116,7 +116,7 @@ const Dashboard = () => {
                 />
 
                 <main className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
-                    {/* Messages d'alerte */}
+                    {/* Messages d'erreur seulement */}
                     {boutiqueError && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
@@ -128,18 +128,6 @@ const Dashboard = () => {
                         </motion.div>
                     )}
 
-                    {boutiqueSuccess && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6"
-                        >
-                            <CheckCircle className="w-5 h-5" />
-                            {boutiqueSuccess}
-                        </motion.div>
-                    )}
-
-                    {/* Messages device token */}
                     {deviceTokenError && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
@@ -147,29 +135,7 @@ const Dashboard = () => {
                             className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6"
                         >
                             <AlertCircle className="w-5 h-5" />
-                            Notification: {deviceTokenError}
-                        </motion.div>
-                    )}
-
-                    {deviceTokenSuccess && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6"
-                        >
-                            <CheckCircle className="w-5 h-5" />
-                            ✅ Notifications activées avec succès
-                        </motion.div>
-                    )}
-
-                    {deviceTokenLoading && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-gray-50 border border-gray-200 text-gray-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6"
-                        >
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                            Activation des notifications...
+                            Erreur notifications: {deviceTokenError}
                         </motion.div>
                     )}
 
@@ -188,9 +154,9 @@ const Dashboard = () => {
                         </p>
                     </motion.div>
 
-                    {/* Cartes de statistiques */}
+                    {/* Cartes de statistiques - SEULEMENT le solde réel */}
                     <motion.div 
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2, duration: 0.6 }}
@@ -221,45 +187,33 @@ const Dashboard = () => {
                             )}
                         </div>
                         
+                        {/* Carte Informations Boutique */}
                         <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300">
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-sm font-semibold text-gray-600">Produits actifs</h3>
+                                <h3 className="text-sm font-semibold text-gray-600">Votre Boutique</h3>
                                 <div className="bg-emerald-100 p-2 rounded-lg">
-                                    <Package className="w-4 h-4 text-emerald-600" />
+                                    <Store className="w-4 h-4 text-emerald-600" />
                                 </div>
                             </div>
-                            <p className="text-3xl font-bold text-gray-800">12</p>
-                            <div className="flex items-center mt-2">
-                                <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                                <span className="text-xs text-gray-600">+2 ce mois</span>
-                            </div>
-                        </div>
-                        
-                        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-sm font-semibold text-gray-600">Commandes ce mois</h3>
-                                <div className="bg-emerald-100 p-2 rounded-lg">
-                                    <ShoppingCart className="w-4 h-4 text-emerald-600" />
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-600">Statut</span>
+                                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                                        Active
+                                    </span>
                                 </div>
-                            </div>
-                            <p className="text-3xl font-bold text-gray-800">8</p>
-                            <div className="flex items-center mt-2">
-                                <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                                <span className="text-xs text-gray-600">+3 vs mois dernier</span>
-                            </div>
-                        </div>
-                        
-                        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-sm font-semibold text-gray-600">Clients satisfaits</h3>
-                                <div className="bg-emerald-100 p-2 rounded-lg">
-                                    <Users className="w-4 h-4 text-emerald-600" />
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-600">Membre depuis</span>
+                                    <span className="text-sm font-medium text-gray-800">
+                                        {user?.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR') : '--/--/----'}
+                                    </span>
                                 </div>
-                            </div>
-                            <p className="text-3xl font-bold text-gray-800">94%</p>
-                            <div className="flex items-center mt-2">
-                                <Store className="w-4 h-4 text-emerald-500 mr-1" />
-                                <span className="text-xs text-gray-600">Performance boutique</span>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-600">Notifications</span>
+                                    <span className="text-sm font-medium text-gray-800">
+                                        {deviceTokenSuccess ? 'Activées' : 'En attente'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
@@ -287,10 +241,10 @@ const Dashboard = () => {
                                         </div>
                                         <div>
                                             <span className="text-gray-700 group-hover:text-gray-800 font-semibold text-lg">
-                                                Ajouter un produit
+                                                Gérer les produits
                                             </span>
                                             <p className="text-sm text-gray-600/70 mt-1">
-                                                Créer un nouveau produit
+                                                Ajouter et modifier vos produits
                                             </p>
                                         </div>
                                     </div>
@@ -330,6 +284,42 @@ const Dashboard = () => {
                         </div>
                     </motion.div>
 
+                    {/* Section informations supplémentaires */}
+                    <motion.div 
+                        className="grid grid-cols-1 gap-6 mb-8"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.6, duration: 0.6 }}
+                    >
+                        {/* Guide de démarrage */}
+                        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-lg">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="bg-blue-100 p-2 rounded-lg">
+                                    <TrendingUp className="w-5 h-5 text-blue-600" />
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900">Prochaines étapes</h3>
+                            </div>
+                            <ul className="space-y-3 text-sm text-gray-600">
+                                <li className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                                    Complétez votre profil boutique
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                                    Ajoutez vos premiers produits
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                                    Configurez vos méthodes de paiement
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                                    Partagez votre boutique en ligne
+                                </li>
+                            </ul>
+                        </div>
+                    </motion.div>
+
                     {/* Message d'encouragement */}
                     <motion.div 
                         className="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-200/40 rounded-2xl p-6 text-center"
@@ -340,7 +330,7 @@ const Dashboard = () => {
                         <div className="flex flex-col sm:flex-row items-center justify-center space-x-3">
                             <Store className="w-6 h-6 text-emerald-500" />
                             <p className="text-gray-700/80 text-lg font-medium">
-                                <strong>Votre boutique avance bien</strong> : Continuez à développer votre activité en ligne !
+                                <strong>Prêt à développer votre activité</strong> : Commencez par ajouter vos premiers produits !
                             </p>
                         </div>
                     </motion.div>
