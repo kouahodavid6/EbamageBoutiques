@@ -291,7 +291,7 @@ const Dashboard = () => {
                                 <div className="bg-blue-100 p-2 rounded-lg">
                                     <TrendingUp className="w-5 h-5 text-blue-600" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-gray-900">Prochaines étapes</h3>
+                                <h3 className="text-lg font-semibold text-gray-900">Étapes</h3>
                             </div>
                             <ul className="space-y-3 text-sm text-gray-600">
                                 <li className="flex items-center gap-2">
