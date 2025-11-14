@@ -130,14 +130,14 @@ const Login = () => {
                 </div>
 
                 {/* Lien mot de passe oublié */}
-                <div className="text-right">
+                {/* <div className="text-right">
                     <Link
                         to="/mot-de-passe-oublie"
                         className="text-sm font-medium text-emerald-600 hover:text-emerald-800 transition-colors duration-300 hover:underline"
                     >
                         Mot de passe oublié ?
                     </Link>
-                </div>
+                </div> */}
 
                 {/* Bouton de soumission */}
                 <button
