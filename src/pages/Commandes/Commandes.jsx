@@ -466,9 +466,8 @@ const Commandes = () => {
                                     {/* Indicateur "Dû réclamé" en badge sur la carte */}
                                     {commande.is_claimed && (
                                         <div className="absolute top-4 right-4 z-10">
-                                            <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full border border-green-200 text-xs font-medium">
+                                            <span className="flex items-center gap-1 p-1 bg-green-100 text-green-700 rounded-full border border-green-200 text-xs font-medium">
                                                 <CheckCircle className="w-3 h-3" />
-                                                Dû réclamé
                                             </span>
                                         </div>
                                     )}
