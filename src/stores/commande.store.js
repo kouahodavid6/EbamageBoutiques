@@ -14,8 +14,16 @@ const useCommandeStore = create((set) => ({
       // Accéder au tableau data depuis la réponse API
       const commandes = response.data?.data || response.data || [];
 
+      // CORRECTION : Mapper les données de l'API vers is_claimed
+      const commandesAvecIsClaimed = commandes.map(commande => ({
+        ...commande,
+        // Si l'API retourne du_reclame, on le mappe vers is_claimed
+        // Si l'API retourne is_claimed directement, on garde la valeur
+        is_claimed: commande.is_claimed !== undefined ? commande.is_claimed : commande.du_reclame || false
+      }));
+
       set({ 
-        commandes: Array.isArray(commandes) ? commandes : [],
+        commandes: Array.isArray(commandesAvecIsClaimed) ? commandesAvecIsClaimed : [],
         loading: false 
       });
     } catch (error) {
@@ -38,7 +46,7 @@ const useCommandeStore = create((set) => ({
     set(state => ({
       commandes: state.commandes.map(commande =>
         commande.hashid === commandeId 
-          ? { ...commande, du_reclame: true }
+          ? { ...commande, is_claimed: true }
           : commande
       )
     }));

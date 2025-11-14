@@ -20,6 +20,7 @@ import { useBoutiqueStore } from "../../stores/boutique.store";
 import { format, differenceInDays } from "date-fns";
 import fr from "date-fns/locale/fr";
 import CommandeDetailsModal from "./components/CommandeDetailsModal";
+import WaveConfirmationModal from "./components/WaveConfirmationModal";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Commandes = () => {
@@ -31,6 +32,7 @@ const Commandes = () => {
         statut: '',
         localisation: ''
     });
+    const [showWaveModal, setShowWaveModal] = useState(false);
 
     const { commandes = [], loading, error, fetchCommandes, markDuAsReclame } = useCommandeStore();
     const { reclamerDu, loading: loadingReclamation } = useBoutiqueStore();
@@ -48,22 +50,42 @@ const Commandes = () => {
         const aujourdHui = new Date();
         const joursEcoules = differenceInDays(aujourdHui, dateLivraison);
         
-        return joursEcoules >= 3 && !commande.du_reclame;
+        return joursEcoules >= 3;
     };
 
     // Fonction pour gérer la réclamation du dû
     const handleReclamerDu = async (commande, e) => {
         e.stopPropagation(); // Empêcher l'ouverture de la modal
+        
+        // Vérifier si déjà réclamé
+        if (commande.is_claimed) {
+            return; // Ne rien faire si déjà réclamé
+        }
+        
         try {
             await reclamerDu(commande.hashid);
             
             // Marquer la commande comme ayant réclamé son dû
             markDuAsReclame(commande.hashid);
             
+            // Afficher le modal Wave
+            setShowWaveModal(true);
+            
         } catch (error) {
             console.error('Erreur lors de la réclamation:', error);
         }
     };
+
+    // Fermer le modal Wave après 5 secondes
+    useEffect(() => {
+        if (showWaveModal) {
+            const timer = setTimeout(() => {
+                setShowWaveModal(false);
+            }, 5000);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [showWaveModal]);
 
     // 🔎 Filtrage combiné (recherche + filtres)
     const filteredCommandes = commandes.filter((commande) => {
@@ -437,10 +459,20 @@ const Commandes = () => {
                             filteredCommandes.map((commande) => (
                                 <motion.div
                                     key={commande.hashid}
-                                    className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100/60 overflow-hidden group"
+                                    className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100/60 overflow-hidden group relative"
                                     variants={itemVariants}
                                     whileHover="hover"
                                 >
+                                    {/* Indicateur "Dû réclamé" en badge sur la carte */}
+                                    {commande.is_claimed && (
+                                        <div className="absolute top-4 right-4 z-10">
+                                            <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full border border-green-200 text-xs font-medium">
+                                                <CheckCircle className="w-3 h-3" />
+                                                Dû réclamé
+                                            </span>
+                                        </div>
+                                    )}
+
                                     <div className="p-6">
                                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                                             <div className="flex items-center space-x-4">
@@ -515,27 +547,28 @@ const Commandes = () => {
                                                     Voir détail
                                                 </motion.button>
 
-                                                {/* Bouton Réclamer son dû (conditionnel) */}
+                                                {/* Bouton Réclamer son dû - TOUJOURS VISIBLE mais GRISÉ si déjà réclamé */}
                                                 {canReclamerDu(commande) && (
                                                     <motion.button
                                                         onClick={(e) => handleReclamerDu(commande, e)}
-                                                        disabled={loadingReclamation}
-                                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors duration-200"
+                                                        disabled={commande.is_claimed || loadingReclamation}
+                                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+                                                            commande.is_claimed 
+                                                                ? "bg-gray-400 text-gray-600 cursor-not-allowed" 
+                                                                : "bg-green-600 text-white hover:bg-green-700"
+                                                        }`}
                                                         variants={buttonVariants}
-                                                        whileHover="hover"
-                                                        whileTap="tap"
+                                                        whileHover={!commande.is_claimed && !loadingReclamation ? "hover" : {}}
+                                                        whileTap={!commande.is_claimed && !loadingReclamation ? "tap" : {}}
                                                     >
                                                         <DollarSign className="w-4 h-4" />
-                                                        {loadingReclamation ? "Traitement..." : "Réclamer son dû"}
+                                                        {loadingReclamation 
+                                                            ? "Traitement..." 
+                                                            : commande.is_claimed 
+                                                                ? "Déjà réclamé" 
+                                                                : "Réclamer son dû"
+                                                        }
                                                     </motion.button>
-                                                )}
-
-                                                {/* Indicateur si déjà réclamé */}
-                                                {commande.du_reclame && (
-                                                    <span className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-600 rounded-lg">
-                                                        <CheckCircle className="w-4 h-4 text-green-500" />
-                                                        Dû réclamé
-                                                    </span>
                                                 )}
                                             </div>
                                         </div>
@@ -553,6 +586,12 @@ const Commandes = () => {
                             onClose={() => setSelectedCommande(null)}
                         />
                     )}
+
+                    {/* Modal de confirmation Wave */}
+                    <WaveConfirmationModal 
+                        isOpen={showWaveModal}
+                        onClose={() => setShowWaveModal(false)}
+                    />
                 </main>
             </div>
         </div>
