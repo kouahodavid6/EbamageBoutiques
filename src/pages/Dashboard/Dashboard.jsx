@@ -208,12 +208,6 @@ const Dashboard = () => {
                                         {user?.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR') : '--/--/----'}
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-600">Notifications</span>
-                                    <span className="text-sm font-medium text-gray-800">
-                                        {deviceTokenSuccess ? 'Activées' : 'En attente'}
-                                    </span>
-                                </div>
                             </div>
                         </div>
                     </motion.div>
@@ -306,15 +300,15 @@ const Dashboard = () => {
                                 </li>
                                 <li className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                                    Ajoutez vos premiers produits
+                                    Ajoutez vos variations
                                 </li>
                                 <li className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                                    Configurez vos méthodes de paiement
+                                    Ajouter vos produits
                                 </li>
                                 <li className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                                    Partagez votre boutique en ligne
+                                    Gérer vos commandes
                                 </li>
                             </ul>
                         </div>
