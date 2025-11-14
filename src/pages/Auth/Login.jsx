@@ -71,11 +71,6 @@ const Login = () => {
                 <p className="text-sm text-emerald-700/80 text-center leading-relaxed">
                     Reprenez le contrôle de votre boutique avec une gestion simplifiée
                 </p>
-                <div className="mt-2 flex items-center justify-center text-xs text-emerald-600">
-                    <span className="bg-emerald-100 px-2 py-1 rounded-full">
-                        🔔 Notifications activées
-                    </span>
-                </div>
             </div>
 
             {/* FORMULAIRE */}
