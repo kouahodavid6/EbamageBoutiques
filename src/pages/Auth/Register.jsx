@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import ContainerForms from "./components/ContainerForms";
 import Input from "../../components/Input";
-import { ArrowLeft, Store, AlertCircle, HandHeart, Sparkles } from "lucide-react";
+import { ArrowLeft, Store, AlertCircle, HandHeart, Sparkles, Smartphone } from "lucide-react";
 import { useState } from "react";
 import useAuthStore from "../../stores/auth.store";
 import toast from "react-hot-toast";
@@ -131,9 +131,15 @@ const Register = () => {
 
                 {/* Téléphone */}
                 <div>
-                    <label htmlFor="tel_btq" className="block text-sm font-semibold text-emerald-800 mb-2">
-                        Téléphone <span className="text-emerald-500">*</span>
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                        <label htmlFor="tel_btq" className="block text-sm font-semibold text-emerald-800">
+                            Téléphone <span className="text-emerald-500">*</span>
+                        </label>
+                        <div className="flex items-center bg-orange-50 px-2 py-1 rounded-lg border border-orange-200">
+                            <Smartphone className="w-3 h-3 text-orange-500 mr-1" />
+                            <span className="text-xs font-medium text-orange-700">Compatible Wave</span>
+                        </div>
+                    </div>
                     <Input
                         type="text"
                         id="tel_btq"
@@ -154,6 +160,10 @@ const Register = () => {
                             {error.tel_btq}
                         </p>
                     )}
+                    <p className="mt-1 text-xs text-emerald-600/70 flex items-center">
+                        <Smartphone className="w-3 h-3 mr-1 text-emerald-500" />
+                        Ce numéro servira également pour recevoir vos paiements Wave
+                    </p>
                 </div>
 
                 {/* Mot de passe */}
