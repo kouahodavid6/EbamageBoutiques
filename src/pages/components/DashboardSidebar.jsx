@@ -91,7 +91,7 @@ const DashboardSidebar = () => {
         {/* Logo en haut du menu */}
         <div className="px-6 py-4 border-b border-emerald-100">
           <Link
-            to="/dashboard-boutique"
+            to="/dashboard"
             className="flex items-center space-x-2">
             <div>
               <Store className="h-8 w-8 text-emerald-500" />
