@@ -262,17 +262,6 @@ const CommandeDetailsModal = ({ commande, isOpen, onClose }) => {
                   </p>
                 </div>
 
-                {/* Adresse */}
-                <div className="bg-emerald-50/30 p-4 sm:p-6 rounded-xl border border-emerald-100">
-                  <h3 className="font-semibold text-emerald-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
-                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 flex-shrink-0" /> 
-                    Adresse de livraison
-                  </h3>
-                  <p className="text-emerald-700 text-sm sm:text-base">
-                    {commande.localisation.quartier}, {commande.localisation.commune}, {commande.localisation.ville}
-                  </p>
-                </div>
-
                 {/* Dates */}
                 <div className="bg-emerald-50/30 p-4 sm:p-6 rounded-xl border border-emerald-100">
                   <h3 className="font-semibold text-emerald-900 mb-2 flex items-center gap-2 text-sm sm:text-base">

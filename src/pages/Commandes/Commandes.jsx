@@ -359,20 +359,6 @@ const Commandes = () => {
                                             </select>
                                         </div>
 
-                                        {/* Filtre par localisation */}
-                                        <div className="flex-1 min-w-0">
-                                            <label className="block text-sm font-medium text-emerald-700 mb-2">
-                                                Localisation (ville/commune)
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="Ex: Abobo, Abidjan..."
-                                                value={localFilters.localisation}
-                                                onChange={(e) => setLocalFilters(prev => ({ ...prev, localisation: e.target.value }))}
-                                                className="w-full px-3 py-2 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-300 bg-white"
-                                            />
-                                        </div>
-
                                         {/* Bouton réinitialiser */}
                                         <motion.button
                                             onClick={handleReinitialiserFiltres}
@@ -516,13 +502,6 @@ const Commandes = () => {
                                                 <div className="flex items-center gap-2">
                                                     <CreditCard className="w-4 h-4 text-emerald-500" />
                                                     <span>{commande.moyen_de_paiement}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <MapPin className="w-4 h-4 text-emerald-500" />
-                                                    <span>
-                                                        {commande.localisation?.commune},{" "}
-                                                        {commande.localisation?.quartier}
-                                                    </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <Clock className="w-4 h-4 text-emerald-500" />
