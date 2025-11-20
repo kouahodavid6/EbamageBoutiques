@@ -1,4 +1,3 @@
-// src/pages/variations/components/ListeVariationsAvecLibelles.jsx
 import { useEffect, useState } from "react";
 import { Settings, Trash2, Edit3, RefreshCw, Palette } from "lucide-react";
 import useVariationStore from "../../../stores/variationLibelle.store";
@@ -92,6 +91,17 @@ const ListeVariationsAvecLibelles = () => {
     fetchVariationsBoutique();
   };
 
+  // Fonction pour déterminer si c'est une variation color et retourner le nom affiché
+  const getVariationDisplayName = (nomVariation) => {
+    if (!nomVariation) return "";
+    
+    // Si c'est "color", on affiche "Couleur"
+    if (nomVariation.toLowerCase() === 'color') {
+      return 'Couleur';
+    }
+    return nomVariation;
+  };
+
   // Fonction pour déterminer si c'est une variation color
   const isColorVariation = (nomVariation) => {
     return nomVariation?.toLowerCase() === 'color';
@@ -172,7 +182,7 @@ const ListeVariationsAvecLibelles = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-emerald-900 capitalize">
-                    {v.nom_variation}
+                    {getVariationDisplayName(v.nom_variation)}
                   </h3>
                   {isColorVariation(v.nom_variation) && (
                     <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
@@ -203,7 +213,7 @@ const ListeVariationsAvecLibelles = () => {
             {editing === v.hashid ? (
               <div className="space-y-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                 <label className="block text-sm font-medium text-emerald-800">
-                  Modifier les libellés pour {v.nom_variation}:
+                  Modifier les libellés pour {getVariationDisplayName(v.nom_variation)}:
                 </label>
                 
                 {editValues.map((val, idx) => (
@@ -289,7 +299,7 @@ const ListeVariationsAvecLibelles = () => {
         isOpen={confirmOpen}
         onConfirm={handleConfirmDelete}
         onCancel={() => setConfirmOpen(false)}
-        entityName={toDelete?.nom_variation || "cette variation"}
+        entityName={toDelete ? getVariationDisplayName(toDelete.nom_variation) : "cette variation"}
         isDeleting={deleting}
       />
     </div>

@@ -369,17 +369,23 @@ const RegisterProduitsModal = ({
     setSelectedVariations(updatedVariations);
   };
 
+  // Fonction pour obtenir le nom affiché de la variation
+  const getVariationDisplayName = (variationId) => {
+    if (!variationId) return "";
+    const variation = variationsBoutique.find(v => v.hashid === variationId);
+    const nomVariation = variation?.nom_variation || "";
+    
+    // Si c'est "color", on affiche "Couleur"
+    if (nomVariation.toLowerCase() === 'color') {
+      return 'Couleur';
+    }
+    return nomVariation;
+  };
+
   const isColorVariation = (variationId) => {
     if (!variationId) return false;
     const variation = variationsBoutique.find(v => v.hashid === variationId);
-    return variation?.nom_variation?.toLowerCase().includes('couleur') || 
-           variation?.nom_variation?.toLowerCase().includes('color');
-  };
-
-  const getVariationName = (variationId) => {
-    if (!variationId) return "";
-    const variation = variationsBoutique.find(v => v.hashid === variationId);
-    return variation?.nom_variation || "";
+    return variation?.nom_variation?.toLowerCase() === 'color';
   };
 
   const getVariationLibelles = (variationId) => {
@@ -816,7 +822,7 @@ const RegisterProduitsModal = ({
                             <option value="">Sélectionner une variation</option>
                             {variationsBoutique.map((shopVariation) => (
                               <option key={shopVariation.hashid} value={shopVariation.hashid}>
-                                {shopVariation.nom_variation} 
+                                {getVariationDisplayName(shopVariation.hashid)} 
                                 {shopVariation.lib_variation?.length > 0 && 
                                   ` (${shopVariation.lib_variation.length} options)`
                                 }
@@ -842,7 +848,7 @@ const RegisterProduitsModal = ({
                         {variation.variationId && (
                           <div className="space-y-2 ml-4">
                             <label className="block text-sm text-emerald-700 font-medium">
-                              Sélectionnez les options pour {getVariationName(variation.variationId)}:
+                              Sélectionnez les options pour {getVariationDisplayName(variation.variationId)}:
                             </label>
                             
                             <div className="flex flex-wrap gap-2">

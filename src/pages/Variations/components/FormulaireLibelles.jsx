@@ -1,4 +1,3 @@
-// src/pages/variations/components/FormulaireLibelles.jsx
 import { useEffect, useState } from "react";
 import useVariationStore from "../../../stores/variationLibelle.store";
 import { Plus, Trash2, RefreshCw, Palette, Check, X } from "lucide-react";
@@ -42,14 +41,27 @@ const FormulaireLibelles = () => {
     fetchVariations();
   };
 
-  // Fonction pour déterminer si c'est une variation color
+  // Fonction pour déterminer si c'est une variation color et retourner le nom affiché
+  const getVariationDisplayName = (variationId = selectedVariation) => {
+    if (!variationId) return "";
+    const variationObj = variations.find(v => v.hashid === variationId);
+    const nomVariation = variationObj?.nom_variation || "";
+    
+    // Si c'est "color", on affiche "Couleur"
+    if (nomVariation.toLowerCase() === 'color') {
+      return 'Couleur';
+    }
+    return nomVariation;
+  };
+
+  // Fonction pour vérifier si c'est une variation color
   const isColorVariation = (variationId = selectedVariation) => {
     if (!variationId) return false;
     const variationObj = variations.find(v => v.hashid === variationId);
     return variationObj?.nom_variation?.toLowerCase() === 'color';
   };
 
-  // Fonction pour obtenir le nom de la variation
+  // Fonction pour obtenir le nom original de la variation
   const getVariationName = (variationId) => {
     if (!variationId) return "";
     const variationObj = variations.find(v => v.hashid === variationId);
@@ -73,7 +85,8 @@ const FormulaireLibelles = () => {
       return;
     }
 
-    const variationName = getVariationName(selectedVariation);
+    const variationDisplayName = getVariationDisplayName(selectedVariation);
+    const variationOriginalName = getVariationName(selectedVariation);
 
     try {
       const result = await addLibelles(selectedVariation, libelles);
@@ -82,12 +95,13 @@ const FormulaireLibelles = () => {
         // Ajouter la variation validée à la liste
         setVariationsAvecLibelles(prev => [...prev, {
           hashid: selectedVariation,
-          nom_variation: variationName,
+          nom_variation: variationOriginalName,
+          display_name: variationDisplayName,
           libelles: libelles,
           isColor: isColorVariation(selectedVariation)
         }]);
 
-        toast.success(`Libellés validés pour "${variationName}"`);
+        toast.success(`Libellés validés pour "${variationDisplayName}"`);
         
         // Réinitialiser pour la prochaine variation
         setSelectedVariation("");
@@ -210,7 +224,7 @@ const FormulaireLibelles = () => {
                 <div className="flex items-center gap-3">
                   {variation.isColor && <Palette className="w-4 h-4 text-blue-500" />}
                   <div>
-                    <span className="font-medium text-emerald-800">{variation.nom_variation}</span>
+                    <span className="font-medium text-emerald-800 capitalize">{variation.display_name}</span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {variation.libelles.map((libelle, idx) => (
                         <span 
@@ -267,7 +281,7 @@ const FormulaireLibelles = () => {
                 <option value="">Choisir une variation...</option>
                 {variationsDisponibles.map((v) => (
                   <option key={v.hashid} value={v.hashid}>
-                    {v.nom_variation}
+                    {v.nom_variation.toLowerCase() === 'color' ? 'Couleur' : v.nom_variation}
                   </option>
                 ))}
               </select>
@@ -293,8 +307,14 @@ const FormulaireLibelles = () => {
           <div className="space-y-4 mt-4 p-4 bg-white rounded-lg border border-blue-200">
             <div className="flex items-center gap-2">
               <label className="block text-sm font-medium text-blue-800">
-                Options pour {getVariationName(selectedVariation)}:
+                Options pour {getVariationDisplayName(selectedVariation)}:
               </label>
+              {isColorVariation() && (
+                <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                  <Palette className="w-3 h-3" />
+                  Variation couleur
+                </span>
+              )}
             </div>
             
             <div className="space-y-3">
@@ -328,7 +348,7 @@ const FormulaireLibelles = () => {
                 className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
               >
                 <Check className="w-4 h-4" />
-                {adding ? "Validation..." : `Valider ${getVariationName(selectedVariation)}`}
+                {adding ? "Validation..." : `Valider ${getVariationDisplayName(selectedVariation)}`}
               </button>
 
               <button
