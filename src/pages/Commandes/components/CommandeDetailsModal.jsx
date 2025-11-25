@@ -18,6 +18,31 @@ import { motion, AnimatePresence } from "framer-motion";
 const CommandeDetailsModal = ({ commande, isOpen, onClose }) => {
   if (!commande || !isOpen) return null;
 
+  // Fonction pour afficher les variations
+  const renderVariation = (variation) => {
+    // Si c'est une variation de couleur
+    if (variation.nom_variation.toLowerCase() === 'color' || 
+        variation.nom_variation.toLowerCase() === 'couleur') {
+      return (
+        <div className="flex items-center gap-2">
+          <span className="text-emerald-800">Couleur:</span>
+          <div 
+            className="w-6 h-6 rounded-full border border-gray-300 shadow-sm"
+            style={{ backgroundColor: variation.lib_variation }}
+            title={variation.lib_variation}
+          />
+        </div>
+      );
+    }
+    
+    // Pour les autres types de variations
+    return (
+      <span className="text-emerald-800">
+        {variation.nom_variation}: {variation.lib_variation}
+      </span>
+    );
+  };
+
   // Badges statut
   const getStatusBadge = (status) => {
     const baseClasses = "px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1";
@@ -198,9 +223,9 @@ const CommandeDetailsModal = ({ commande, isOpen, onClose }) => {
                                 {article.variations.map((variation, i) => (
                                   <span
                                     key={i}
-                                    className="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-lg text-xs border border-emerald-200 break-words max-w-full"
+                                    className="bg-emerald-100 px-2 py-1 rounded-lg text-xs border border-emerald-200 break-words max-w-full flex items-center gap-1"
                                   >
-                                    {variation.nom_variation}: {variation.lib_variation}
+                                    {renderVariation(variation)}
                                   </span>
                                 ))}
                               </div>
