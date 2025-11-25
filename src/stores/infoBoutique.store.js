@@ -5,17 +5,52 @@ import { InfoBoutique } from "../services/infoBoutique.service";
 
 const useBoutiqueInfoStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       boutique: null,
       loading: false,
+      lastFetchTime: null, // Pour détecter les changements
 
-      fetchBoutiqueInfo: async () => {
+      // FORCER le rechargement à chaque appel
+      fetchBoutiqueInfo: async (forceRefresh = false) => {
+        // Si pas de forceRefresh et données récentes (< 30 secondes), ne pas recharger
+        if (!forceRefresh && get().lastFetchTime && (Date.now() - get().lastFetchTime < 30000)) {
+          return;
+        }
+
         set({ loading: true });
         try {
           const data = await InfoBoutique.getBoutiqueInfo();
-          set({ boutique: data });
+          set({ 
+            boutique: data,
+            lastFetchTime: Date.now()
+          });
         } catch (error) {
           toast.error(error.message || "Erreur lors du chargement des informations");
+        } finally {
+          set({ loading: false });
+        }
+      },
+
+      // VIDER complètement le store
+      clearBoutiqueStore: () => {
+        set({ 
+          boutique: null, 
+          loading: false,
+          lastFetchTime: null 
+        });
+      },
+
+      // Recharger en forçant le reset
+      refreshBoutiqueInfo: async () => {
+        set({ loading: true });
+        try {
+          const data = await InfoBoutique.getBoutiqueInfo();
+          set({ 
+            boutique: data,
+            lastFetchTime: Date.now()
+          });
+        } catch (error) {
+          toast.error(error.message || "Erreur lors du rafraîchissement");
         } finally {
           set({ loading: false });
         }
@@ -56,7 +91,7 @@ const useBoutiqueInfoStore = create(
         set({ loading: true });
         try {
           const res = await InfoBoutique.updateBoutiqueImage(hashid, imageFile);
-          toast.success(res.message || "Image de la boutique mise à jour avec succès !");
+          toast.success(res.message || "Image mise à jour avec succès !");
 
           set((state) => ({
             boutique: {
@@ -76,16 +111,14 @@ const useBoutiqueInfoStore = create(
         } finally {
           set({ loading: false });
         }
-      },
-
-      // Action pour vider le store (optionnel)
-      clearBoutique: () => {
-        set({ boutique: null });
       }
     }),
     {
-      name: "boutique-info-storage", // nom pour le localStorage
-      partialize: (state) => ({ boutique: state.boutique }), // ne persister que boutique
+      name: "boutique-info-storage",
+      partialize: (state) => ({ 
+        boutique: state.boutique,
+        lastFetchTime: state.lastFetchTime 
+      }),
     }
   )
 );

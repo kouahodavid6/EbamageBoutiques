@@ -11,14 +11,51 @@ import ImageUpload from "./components/ImageUpload";
 const Profil = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("infos");
+    const [forceRefresh, setForceRefresh] = useState(0);
 
-    const { boutique, fetchBoutiqueInfo, loading } = useBoutiqueInfoStore();
+    const { boutique, fetchBoutiqueInfo, loading, clearBoutiqueStore } = useBoutiqueInfoStore();
 
+    // FORCER le rechargement à chaque montage du composant
     useEffect(() => {
-        fetchBoutiqueInfo();
+        console.log('🔄 Profil component mounted - Fetching boutique info');
+        
+        // Option 1: Vider le store puis recharger
+        const loadBoutiqueData = async () => {
+            await clearBoutiqueStore();
+            await fetchBoutiqueInfo(true); // forceRefresh = true
+        };
+        
+        loadBoutiqueData();
+    }, [fetchBoutiqueInfo, clearBoutiqueStore]);
+
+    // Écouter les changements de route/visibility
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                console.log('📱 Page visible - Refreshing data');
+                fetchBoutiqueInfo(true);
+            }
+        };
+
+        const handleFocus = () => {
+            console.log('🎯 Page focused - Refreshing data');
+            fetchBoutiqueInfo(true);
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleFocus);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleFocus);
+        };
     }, [fetchBoutiqueInfo]);
 
-    // Animations
+    // Rafraîchir quand on change d'onglet
+    useEffect(() => {
+        fetchBoutiqueInfo(true);
+    }, [activeTab, fetchBoutiqueInfo]);
+
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -61,7 +98,7 @@ const Profil = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50/20 flex flex-col md:flex-row">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50/20 flex flex-col md:flex-row" key={`profil-${boutique?.hashid || 'no-boutique'}`}>
 
             {/* Overlay mobile */}
             {sidebarOpen && (
@@ -77,7 +114,6 @@ const Profil = () => {
                     ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
                     md:translate-x-0 w-64 h-screen`}
             >
-                {/* Croix mobile */}
                 <div className="md:hidden flex justify-end p-4 absolute top-0 right-0 z-50">
                     <button
                         onClick={() => setSidebarOpen(false)}
@@ -105,12 +141,13 @@ const Profil = () => {
 
                 <main className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
                     <div className="max-w-4xl mx-auto">
-                        {/* En-tête avec animation */}
                         <motion.div
                             variants={containerVariants}
                             initial="hidden"
                             animate="visible"
+                            key={`profile-container-${boutique?.hashid || 'loading'}`}
                         >
+                            {/* En-tête boutique */}
                             <motion.div
                                 variants={itemVariants}
                                 className="bg-white rounded-2xl shadow-sm border border-green-100 p-6 mb-6"
@@ -122,16 +159,16 @@ const Profil = () => {
                                         }`}
                                         whileHover={{ scale: 1.05 }}
                                         transition={{ type: "spring", stiffness: 300 }}
+                                        key={`avatar-${boutique?.image_btq || 'no-image'}`}
                                     >
                                         {boutique?.image_btq ? (
-                                            // Afficher l'image si elle existe
                                             <img
                                                 src={boutique.image_btq}
                                                 alt={`Photo de ${boutique.nom_btq}`}
                                                 className="w-full h-full object-cover"
+                                                key={boutique.image_btq}
                                             />
                                         ) : (
-                                            // Afficher l'icône Store si pas d'image
                                             <div className="w-full h-full flex items-center justify-center">
                                                 <Store className="w-8 h-8 text-green-600" />
                                             </div>
@@ -143,6 +180,7 @@ const Profil = () => {
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             transition={{ delay: 0.2 }}
+                                            key={`title-${boutique?.nom_btq || 'loading'}`}
                                         >
                                             {loading ? (
                                                 <div className="flex items-center space-x-2">
@@ -165,7 +203,7 @@ const Profil = () => {
                                 </div>
                             </motion.div>
 
-                            {/* Navigation par onglets */}
+                            {/* Navigation onglets */}
                             <motion.div
                                 variants={itemVariants}
                                 className="bg-white rounded-2xl shadow-sm border border-green-100 p-2 mb-6"
@@ -204,7 +242,7 @@ const Profil = () => {
                                 </div>
                             </motion.div>
 
-                            {/* Contenu des onglets avec animation */}
+                            {/* Contenu onglets */}
                             <motion.div
                                 className="bg-white rounded-2xl shadow-sm border border-green-100 overflow-hidden"
                                 layout
@@ -212,18 +250,23 @@ const Profil = () => {
                                 <AnimatePresence mode="wait">
                                     {activeTab === "infos" && (
                                         <motion.div
-                                            key="infos"
+                                            key={`infos-${boutique?.hashid || 'loading'}`}
                                             variants={tabContentVariants}
                                             initial="hidden"
                                             animate="visible"
                                             exit="exit"
                                         >
                                             <div className="p-6">
-                                                {/* Composant d'upload d'image */}
-                                                <ImageUpload boutique={boutique} loading={loading} />
-                                                
-                                                {/* Formulaire d'informations */}
-                                                <InfoForm boutique={boutique} loading={loading} />
+                                                <ImageUpload 
+                                                    boutique={boutique} 
+                                                    loading={loading} 
+                                                    key={`image-upload-${boutique?.hashid || 'loading'}`}
+                                                />
+                                                <InfoForm 
+                                                    boutique={boutique} 
+                                                    loading={loading} 
+                                                    key={`info-form-${boutique?.hashid || 'loading'}`}
+                                                />
                                             </div>
                                         </motion.div>
                                     )}
@@ -241,7 +284,7 @@ const Profil = () => {
                                 </AnimatePresence>
                             </motion.div>
 
-                            {/* Informations de compte */}
+                            {/* Informations compte */}
                             {!loading && boutique && (
                                 <motion.div
                                     variants={itemVariants}
@@ -249,40 +292,25 @@ const Profil = () => {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.4 }}
+                                    key={`account-info-${boutique.hashid}`}
                                 >
                                     <h3 className="text-lg font-semibold text-green-900 mb-4">
                                         Informations du compte
                                     </h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                        <motion.div 
-                                            className="flex items-center space-x-3 text-green-700"
-                                            whileHover={{ x: 5 }}
-                                            transition={{ type: "spring", stiffness: 300 }}
-                                        >
+                                        <motion.div className="flex items-center space-x-3 text-green-700">
                                             <Calendar className="w-4 h-4 text-green-500" />
                                             <span>Créé le: {new Date(boutique?.created_at).toLocaleDateString('fr-FR')}</span>
                                         </motion.div>
-                                        <motion.div 
-                                            className="flex items-center space-x-3 text-green-700"
-                                            whileHover={{ x: 5 }}
-                                            transition={{ type: "spring", stiffness: 300 }}
-                                        >
+                                        <motion.div className="flex items-center space-x-3 text-green-700">
                                             <Calendar className="w-4 h-4 text-green-500" />
                                             <span>Dernière modification: {new Date(boutique?.updated_at).toLocaleDateString('fr-FR')}</span>
                                         </motion.div>
-                                        <motion.div 
-                                            className="flex items-center space-x-3 text-green-700"
-                                            whileHover={{ x: 5 }}
-                                            transition={{ type: "spring", stiffness: 300 }}
-                                        >
+                                        <motion.div className="flex items-center space-x-3 text-green-700">
                                             <Mail className="w-4 h-4 text-green-500" />
                                             <span>Email: {boutique?.email_btq}</span>
                                         </motion.div>
-                                        <motion.div 
-                                            className="flex items-center space-x-3 text-green-700"
-                                            whileHover={{ x: 5 }}
-                                            transition={{ type: "spring", stiffness: 300 }}
-                                        >
+                                        <motion.div className="flex items-center space-x-3 text-green-700">
                                             <Phone className="w-4 h-4 text-green-500" />
                                             <span>Téléphone: {boutique?.tel_btq}</span>
                                         </motion.div>
@@ -291,14 +319,8 @@ const Profil = () => {
                             )}
                         </motion.div>
 
-                        {/* Squelette de chargement */}
                         {loading && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="space-y-4"
-                            >
-                                {/* Squelette pour les informations de compte */}
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                                 <div className="bg-white rounded-2xl shadow-sm border border-green-100 p-6 mt-6">
                                     <div className="h-6 bg-green-100 rounded w-1/3 mb-4 animate-pulse"></div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

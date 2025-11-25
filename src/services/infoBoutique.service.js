@@ -14,7 +14,7 @@ const updateBoutiqueInfo = async (data) => {
         const response = await axiosInstance.post("/api/boutique/update-infos", data);
         return response.data;
     } catch (error) {
-        throw error.response?.error || error;
+        throw error.response?.data?.error || error.response?.data || error;
     }
 };
 
@@ -27,11 +27,9 @@ const updateBoutiquePassword = async (data) => {
     }
 };
 
-// NOUVELLE FONCTION POUR METTRE À JOUR L'IMAGE
 const updateBoutiqueImage = async (hashid, imageFile) => {
     try {
         const formData = new FormData();
-        
         formData.append('image_btq', imageFile);
         
         const response = await axiosInstance.post(`/api/boutique/image/${hashid}/update`, formData, {
@@ -48,9 +46,9 @@ const updateBoutiqueImage = async (hashid, imageFile) => {
     }
 };
 
-export const InfoBoutique ={
+export const InfoBoutique = {
     getBoutiqueInfo,
     updateBoutiqueInfo,
     updateBoutiquePassword,
     updateBoutiqueImage
-}
+};
