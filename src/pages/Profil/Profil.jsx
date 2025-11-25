@@ -11,35 +11,27 @@ import ImageUpload from "./components/ImageUpload";
 const Profil = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("infos");
-    const [forceRefresh, setForceRefresh] = useState(0);
 
-    const { boutique, fetchBoutiqueInfo, loading, clearBoutiqueStore } = useBoutiqueInfoStore();
+    const { boutique, fetchBoutiqueInfo, loading, checkAndRefreshBoutique } = useBoutiqueInfoStore();
 
-    // FORCER le rechargement à chaque montage du composant
+    // ✅ UTILISER checkAndRefreshBoutique au lieu de clearBoutiqueStore
     useEffect(() => {
-        console.log('🔄 Profil component mounted - Fetching boutique info');
-        
-        // Option 1: Vider le store puis recharger
-        const loadBoutiqueData = async () => {
-            await clearBoutiqueStore();
-            await fetchBoutiqueInfo(true); // forceRefresh = true
-        };
-        
-        loadBoutiqueData();
-    }, [fetchBoutiqueInfo, clearBoutiqueStore]);
+        console.log('🔄 Profil component mounted - Checking boutique data');
+        checkAndRefreshBoutique();
+    }, [checkAndRefreshBoutique]);
 
-    // Écouter les changements de route/visibility
+    // ✅ Écouter les changements de route/visibility
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (!document.hidden) {
-                console.log('📱 Page visible - Refreshing data');
-                fetchBoutiqueInfo(true);
+                console.log('📱 Page visible - Checking boutique data');
+                checkAndRefreshBoutique();
             }
         };
 
         const handleFocus = () => {
-            console.log('🎯 Page focused - Refreshing data');
-            fetchBoutiqueInfo(true);
+            console.log('🎯 Page focused - Checking boutique data');
+            checkAndRefreshBoutique();
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -49,13 +41,14 @@ const Profil = () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('focus', handleFocus);
         };
-    }, [fetchBoutiqueInfo]);
+    }, [checkAndRefreshBoutique]);
 
-    // Rafraîchir quand on change d'onglet
+    // ✅ Rafraîchir quand on change d'onglet
     useEffect(() => {
         fetchBoutiqueInfo(true);
     }, [activeTab, fetchBoutiqueInfo]);
 
+    // ... (le reste du code reste identique) ...
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {

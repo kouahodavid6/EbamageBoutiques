@@ -8,12 +8,26 @@ const useBoutiqueInfoStore = create(
     (set, get) => ({
       boutique: null,
       loading: false,
-      lastFetchTime: null, // Pour détecter les changements
+      lastFetchTime: null,
+      currentBoutiqueHash: null, // ✅ NOUVEAU: pour détecter les changements de boutique
 
-      // FORCER le rechargement à chaque appel
       fetchBoutiqueInfo: async (forceRefresh = false) => {
-        // Si pas de forceRefresh et données récentes (< 30 secondes), ne pas recharger
-        if (!forceRefresh && get().lastFetchTime && (Date.now() - get().lastFetchTime < 30000)) {
+        const state = get();
+        
+        // ✅ Vérifier si la boutique a changé (nouvelle connexion)
+        const hasBoutiqueChanged = async () => {
+          try {
+            const freshData = await InfoBoutique.getBoutiqueInfo();
+            return freshData.hashid !== state.currentBoutiqueHash;
+          } catch (error) {
+            return true; // En cas d'erreur, on considère que ça a changé
+          }
+        };
+
+        // ✅ Forcer le refresh si changement de boutique détecté
+        const boutiqueChanged = forceRefresh ? true : await hasBoutiqueChanged();
+        
+        if (!boutiqueChanged && state.lastFetchTime && (Date.now() - state.lastFetchTime < 30000)) {
           return;
         }
 
@@ -22,7 +36,8 @@ const useBoutiqueInfoStore = create(
           const data = await InfoBoutique.getBoutiqueInfo();
           set({ 
             boutique: data,
-            lastFetchTime: Date.now()
+            lastFetchTime: Date.now(),
+            currentBoutiqueHash: data.hashid // ✅ Stocker le hash actuel
           });
         } catch (error) {
           toast.error(error.message || "Erreur lors du chargement des informations");
@@ -31,23 +46,25 @@ const useBoutiqueInfoStore = create(
         }
       },
 
-      // VIDER complètement le store
+      // ✅ VIDER seulement quand c'est nécessaire (déconnexion)
       clearBoutiqueStore: () => {
         set({ 
           boutique: null, 
           loading: false,
-          lastFetchTime: null 
+          lastFetchTime: null,
+          currentBoutiqueHash: null
         });
       },
 
-      // Recharger en forçant le reset
+      // ✅ Rafraîchir sans vider
       refreshBoutiqueInfo: async () => {
         set({ loading: true });
         try {
           const data = await InfoBoutique.getBoutiqueInfo();
           set({ 
             boutique: data,
-            lastFetchTime: Date.now()
+            lastFetchTime: Date.now(),
+            currentBoutiqueHash: data.hashid
           });
         } catch (error) {
           toast.error(error.message || "Erreur lors du rafraîchissement");
@@ -111,13 +128,33 @@ const useBoutiqueInfoStore = create(
         } finally {
           set({ loading: false });
         }
+      },
+
+      // ✅ NOUVELLE méthode: Vérifier et rafraîchir si nécessaire
+      checkAndRefreshBoutique: async () => {
+        const state = get();
+        if (!state.boutique || !state.currentBoutiqueHash) {
+          await get().fetchBoutiqueInfo(true);
+          return;
+        }
+
+        try {
+          const freshData = await InfoBoutique.getBoutiqueInfo();
+          if (freshData.hashid !== state.currentBoutiqueHash) {
+            console.log('🔄 Changement de boutique détecté, rafraîchissement...');
+            await get().refreshBoutiqueInfo();
+          }
+        } catch (error) {
+          console.error('Erreur lors de la vérification:', error);
+        }
       }
     }),
     {
       name: "boutique-info-storage",
       partialize: (state) => ({ 
         boutique: state.boutique,
-        lastFetchTime: state.lastFetchTime 
+        lastFetchTime: state.lastFetchTime,
+        currentBoutiqueHash: state.currentBoutiqueHash // ✅ Persister aussi le hash
       }),
     }
   )
