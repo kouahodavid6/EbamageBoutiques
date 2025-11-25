@@ -41,7 +41,8 @@ const Dashboard = () => {
                         await registerDeviceToken(user.hashid, token);
                     }
                 } catch (error) {
-                    // Gestion silencieuse des erreurs
+                    // Gestion silencieuse des erreurs - PAS DE TOAST
+                    console.error('Erreur enregistrement token:', error);
                 }
             }
         };
@@ -116,7 +117,7 @@ const Dashboard = () => {
                 />
 
                 <main className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
-                    {/* Messages d'erreur seulement */}
+                    {/* Messages d'erreur seulement pour la boutique - PAS pour les notifications */}
                     {boutiqueError && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
@@ -128,7 +129,8 @@ const Dashboard = () => {
                         </motion.div>
                     )}
 
-                    {deviceTokenError && (
+                    {/* SUPPRIMER le message d'erreur pour deviceTokenError */}
+                    {/* {deviceTokenError && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -137,7 +139,7 @@ const Dashboard = () => {
                             <AlertCircle className="w-5 h-5" />
                             Erreur notifications: {deviceTokenError}
                         </motion.div>
-                    )}
+                    )} */}
 
                     {/* Section de bienvenue */}
                     <motion.div 
