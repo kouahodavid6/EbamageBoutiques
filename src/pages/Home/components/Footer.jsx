@@ -8,7 +8,7 @@ const Footer = () => {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-500/5 to-transparent"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 gap-">
           {/* Brand Section */}
           <div className="md:col-span-1">
             <div className="flex items-center mb-4">
@@ -25,6 +25,17 @@ const Footer = () => {
             <p className="text-sm text-emerald-100/80 mb-4 leading-relaxed">
               La plateforme e-commerce qui facilite la vente et l'achat d'articles en toute sécurité
             </p>
+            
+            {/* Bouton Support PDF */}
+            <a
+              href="/pdf/SupportPDF.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 border-2 border-white bg-transparent hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 hover:shadow-lg hover:shadow-emerald-500/20"
+            >
+              {/* Icône SVG */}
+              Support PDF
+            </a>
           </div>
 
           {/* Contact Section */}
@@ -35,21 +46,20 @@ const Footer = () => {
                 <div className="bg-emerald-500/20 p-2 rounded-lg mr-3 group-hover:bg-emerald-500/30 transition-all duration-300">
                   <Phone className="h-4 w-4 text-emerald-300" />
                 </div>
-                <a 
-                  href="https://wa.me/2250779863190" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm hover:text-emerald-100 transition-colors hover:underline"
+                <span 
+                  className="text-sm hover:text-emerald-100 transition-colors hover:underline cursor-pointer"
+                  onClick={() => window.open('https://wa.me/2250779863190')}
                 >
                   +225 07 79 86 31 90
-                </a>
+                </span>
               </div>
               <div className="flex items-center group">
                 <div className="bg-emerald-500/20 p-2 rounded-lg mr-3 group-hover:bg-emerald-500/30 transition-all duration-300">
                   <Mail className="h-4 w-4 text-emerald-300" />
                 </div>
                 <a 
-                  href="mailto:ebamage.ci@gmail.com?cc=autre@email.com&bcc=secret@email.com&subject=Contact&body=Message%20ici" 
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=ebamage.ci@gmail.com&su=Contact&body=Bonjour"
+                  target="_blank"
                   className="text-sm hover:text-emerald-100 transition-colors hover:underline"
                 >
                   ebamage.ci@gmail.com
@@ -59,7 +69,12 @@ const Footer = () => {
                 <div className="bg-emerald-500/20 p-2 rounded-lg mr-3 group-hover:bg-emerald-500/30 transition-all duration-300">
                   <Globe className="h-4 w-4 text-emerald-300" />
                 </div>
-                <a href="#" className="text-sm hover:text-emerald-100 transition-colors hover:underline">
+                <a 
+                  href="https://www.ebamage.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm hover:text-emerald-100 transition-colors hover:underline"
+                >
                   www.ebamage.com
                 </a>
               </div>
@@ -67,7 +82,7 @@ const Footer = () => {
           </div>
 
           {/* Legal Section */}
-          <div>
+          {/* <div>
             <h3 className="text-lg font-semibold mb-4 text-emerald-200">Légal</h3>
             <ul className="space-y-3 text-emerald-100/80">
               <li>
@@ -86,10 +101,10 @@ const Footer = () => {
                 </a>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Support Section */}
-          <div>
+          {/* <div>
             <h3 className="text-lg font-semibold mb-4 text-emerald-200">Support</h3>
             <ul className="space-y-3 text-emerald-100/80">
               <li>
@@ -108,7 +123,7 @@ const Footer = () => {
                 </a>
               </li>
             </ul>
-          </div>
+          </div> */}
         </div>
 
         {/* Bottom Section */}
@@ -119,9 +134,9 @@ const Footer = () => {
               <span 
                 className="text-emerald-300 hover:text-emerald-200 underline transition-colors cursor-pointer"
                 onClick={() => window.open('https://devs-trop-doux-recup.vercel.app/', '_blank')}
-                >
+              >
                   Équipe Dev
-                </span>
+              </span>
             </p>
             <p className="text-sm text-emerald-200/80">
               © {new Date().getFullYear()} Ebamage. Tous droits réservés.
