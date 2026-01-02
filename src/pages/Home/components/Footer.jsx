@@ -1,4 +1,4 @@
-import { Store, Phone, Mail, Globe, Heart } from "lucide-react";
+import { Store, FileText, Phone, Mail, Globe, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -33,7 +33,7 @@ const Footer = () => {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 border-2 border-white bg-transparent hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 hover:shadow-lg hover:shadow-emerald-500/20"
             >
-              {/* Icône SVG */}
+              <FileText className="h-6 w-6" />
               Support PDF
             </a>
           </div>
