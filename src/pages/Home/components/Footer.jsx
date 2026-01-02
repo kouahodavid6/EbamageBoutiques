@@ -35,16 +35,24 @@ const Footer = () => {
                 <div className="bg-emerald-500/20 p-2 rounded-lg mr-3 group-hover:bg-emerald-500/30 transition-all duration-300">
                   <Phone className="h-4 w-4 text-emerald-300" />
                 </div>
-                <a href="#" className="text-sm hover:text-emerald-100 transition-colors hover:underline">
-                  +225 01 01 01 01 01
+                <a 
+                  href="https://wa.me/2250779863190" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm hover:text-emerald-100 transition-colors hover:underline"
+                >
+                  +225 07 79 86 31 90
                 </a>
               </div>
               <div className="flex items-center group">
                 <div className="bg-emerald-500/20 p-2 rounded-lg mr-3 group-hover:bg-emerald-500/30 transition-all duration-300">
                   <Mail className="h-4 w-4 text-emerald-300" />
                 </div>
-                <a href="#" className="text-sm hover:text-emerald-100 transition-colors hover:underline">
-                  contact@ebamage.com
+                <a 
+                  href="mailto:ebamage.ci@gmail.com?cc=autre@email.com&bcc=secret@email.com&subject=Contact&body=Message%20ici" 
+                  className="text-sm hover:text-emerald-100 transition-colors hover:underline"
+                >
+                  ebamage.ci@gmail.com
                 </a>
               </div>
               <div className="flex items-center group">
@@ -107,7 +115,13 @@ const Footer = () => {
         <div className="border-t border-emerald-700/50 mt-8 pt-6 text-center">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-emerald-200/80">
-              💻 Développé avec <Heart className="inline w-4 h-4 text-emerald-400 mx-1" /> par <a href="https://easy-portfolio.vercel.app/" className="text-emerald-300 hover:text-emerald-200 underline transition-colors">Kouaho Ekissi David Emmanuel</a>
+              💻 Développé avec le <Heart className="inline w-4 h-4 text-emerald-400 mx-1" /> par {' '}
+              <span 
+                className="text-emerald-300 hover:text-emerald-200 underline transition-colors cursor-pointer"
+                onClick={() => window.open('https://devs-trop-doux-recup.vercel.app/', '_blank')}
+                >
+                  Équipe Dev
+                </span>
             </p>
             <p className="text-sm text-emerald-200/80">
               © {new Date().getFullYear()} Ebamage. Tous droits réservés.
