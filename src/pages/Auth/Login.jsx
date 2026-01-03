@@ -1,9 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../../components/Input";
-import { ArrowLeft, Store, AlertCircle, HandHeart } from "lucide-react";
+import { ArrowLeft, Store, AlertCircle, HandHeart, KeyRound } from "lucide-react";
 import { useState } from "react";
 import useAuthStore from "../../stores/auth.store";
-import ContainerForms from "./components/ContainerForms";
+import ContainerForms from "../components/ContainerForms";
+import { motion } from "framer-motion";
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -40,6 +41,11 @@ const Login = () => {
         } catch (error) {
             console.error("Erreur lors de la connexion :", error);
         }
+    };
+
+    const buttonVariants = {
+        hover: { scale: 1.05, transition: { duration: 0.2 } },
+        tap: { scale: 0.95, transition: { duration: 0.1 } }
     };
 
     return (
@@ -104,9 +110,10 @@ const Login = () => {
 
                 {/* Password */}
                 <div>
-                    <label htmlFor="password_btq" className="block text-sm font-semibold text-emerald-800 mb-2">
+                    <label htmlFor="password_btq" className="block text-sm font-semibold text-emerald-800">
                         Mot de passe <span className="text-emerald-500">*</span>
                     </label>
+
                     <Input
                         type="password"
                         id="password_btq"
@@ -121,6 +128,20 @@ const Login = () => {
                         }`}
                         required
                     />
+                    <div className="flex justify-end items-center mt-4">
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            <Link
+                                to="/forgot-password-boutique"
+                                className="text-sm font-medium text-emerald-600 hover:text-emerald-800 transition-colors duration-300 flex items-center gap-1"
+                            >
+                                <KeyRound className="w-3 h-3" />
+                                Mot de passe oublié ?
+                            </Link>
+                        </motion.div>
+                    </div>
                     {error?.password_btq && (
                         <p className="mt-2 text-sm text-red-600 flex items-center bg-red-50 px-3 py-2 rounded-lg">
                             <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
@@ -129,23 +150,16 @@ const Login = () => {
                     )}
                 </div>
 
-                {/* Lien mot de passe oublié */}
-                {/* <div className="text-right">
-                    <Link
-                        to="/mot-de-passe-oublie"
-                        className="text-sm font-medium text-emerald-600 hover:text-emerald-800 transition-colors duration-300 hover:underline"
-                    >
-                        Mot de passe oublié ?
-                    </Link>
-                </div> */}
-
                 {/* Bouton de soumission */}
-                <button
+                <motion.button
                     type="submit"
                     disabled={loading}
-                    className={`w-full bg-gradient-to-r from-emerald-500 to-green-500 text-white py-3 px-4 rounded-xl font-semibold hover:from-emerald-600 hover:to-green-600 transition-all duration-300 shadow-lg hover:shadow-emerald-200/50 transform hover:-translate-y-0.5 ${
+                    className={`w-full bg-gradient-to-r from-emerald-500 to-green-500 text-white py-3 px-4 rounded-xl font-semibold hover:from-emerald-600 hover:to-green-600 transition-all duration-300 shadow-lg hover:shadow-emerald-200/50 ${
                         loading ? "opacity-50 cursor-not-allowed hover:transform-none" : ""
                     }`}
+                    variants={buttonVariants}
+                    whileHover={!loading ? "hover" : {}}
+                    whileTap={!loading ? "tap" : {}}
                 >
                     {loading ? (
                         <div className="flex items-center justify-center">
@@ -155,7 +169,7 @@ const Login = () => {
                     ) : (
                         "Se connecter à ma boutique"
                     )}
-                </button>
+                </motion.button>
             </form>
 
             {/* LIEN VERS INSCRIPTION */}

@@ -8,6 +8,7 @@ import Home from './pages/Home/Home'
 
 import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register';
+import ForgotPasswordBoutique from './pages/SystemeMDPForgot/ForgotPasswordBoutique';
 
 import Dashboard from './pages/Dashboard/Dashboard';
 import Produits from './pages/Produits/Produits';
@@ -81,6 +82,7 @@ function App() {
             {/* Authentification */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password-boutique" element={<ForgotPasswordBoutique />} /> {/* NOUVEAU */}
 
             {/* Routes protégées - Dashboard */}
             <Route
@@ -102,7 +104,7 @@ function App() {
             />
             {/* Dashboard-boutique - Commandes */}
             <Route
-              path="commandes"
+              path="/commandes"
               element={
                 <ProtectedRoute>
                   <Commandes />
@@ -111,7 +113,7 @@ function App() {
             />
             {/* Dashboard-boutique - Variations */}
             <Route 
-              path='variations'
+              path='/variations'
               element={
                 <ProtectedRoute>
                   <Variations />
@@ -120,7 +122,7 @@ function App() {
             />
             {/* Dashboard-boutique - profil */}
             <Route 
-              path='profil'
+              path='/profil'
               element={
                 <ProtectedRoute>
                   <Profil />
