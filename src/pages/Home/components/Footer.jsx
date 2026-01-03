@@ -80,50 +80,6 @@ const Footer = () => {
               </div>
             </div>
           </div>
-
-          {/* Legal Section */}
-          {/* <div>
-            <h3 className="text-lg font-semibold mb-4 text-emerald-200">Légal</h3>
-            <ul className="space-y-3 text-emerald-100/80">
-              <li>
-                <a href="#" className="hover:text-emerald-100 transition-colors hover:underline block py-1">
-                  Mentions légales
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-emerald-100 transition-colors hover:underline block py-1">
-                  Conditions d'utilisation
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-emerald-100 transition-colors hover:underline block py-1">
-                  Politique de confidentialité
-                </a>
-              </li>
-            </ul>
-          </div> */}
-
-          {/* Support Section */}
-          {/* <div>
-            <h3 className="text-lg font-semibold mb-4 text-emerald-200">Support</h3>
-            <ul className="space-y-3 text-emerald-100/80">
-              <li>
-                <a href="#" className="hover:text-emerald-100 transition-colors hover:underline block py-1">
-                  Centre d'aide
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-emerald-100 transition-colors hover:underline block py-1">
-                  Contact support
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-emerald-100 transition-colors hover:underline block py-1">
-                  Guides pratiques
-                </a>
-              </li>
-            </ul>
-          </div> */}
         </div>
 
         {/* Bottom Section */}
