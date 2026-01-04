@@ -11,7 +11,7 @@ import CartesRaisons from "./components/CartesRaisons";
 import CartesTemoignages from "./components/CartesTemoignages";
 
 import { raisonData } from '../../data/HomeData';
-import { temoignageData } from "../../data/HomeData";
+// import { temoignageData } from "../../data/HomeData";
 import Footer from "./components/Footer";
 
 const Home = () => {
@@ -156,7 +156,7 @@ const Home = () => {
             </Section>
 
             {/* Section Témoignages */}
-            <Section className="bg-gradient-to-b from-emerald-50/50 to-white">
+            {/* <Section className="bg-gradient-to-b from-emerald-50/50 to-white">
                 <EnteteSections 
                     title="Ils nous font confiance"
                     text="Découvrez les témoignages de nos commerçants partenaires"
@@ -173,7 +173,7 @@ const Home = () => {
                         />
                     ))}
                 </Card>
-            </Section>
+            </Section> */}
 
             {/* Section CTA finale */}
             <Section className="bg-gradient-to-r from-emerald-600 to-green-500 text-center relative overflow-hidden">
