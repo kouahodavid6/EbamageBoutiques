@@ -65,19 +65,6 @@ const Footer = () => {
                   ebamage.ci@gmail.com
                 </a>
               </div>
-              <div className="flex items-center group">
-                <div className="bg-emerald-500/20 p-2 rounded-lg mr-3 group-hover:bg-emerald-500/30 transition-all duration-300">
-                  <Globe className="h-4 w-4 text-emerald-300" />
-                </div>
-                <a 
-                  href="https://www.ebamage.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm hover:text-emerald-100 transition-colors hover:underline"
-                >
-                  www.ebamage.com
-                </a>
-              </div>
             </div>
           </div>
         </div>
