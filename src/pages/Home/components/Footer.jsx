@@ -76,9 +76,9 @@ const Footer = () => {
               💻 Développé avec le <Heart className="inline w-4 h-4 text-emerald-400 mx-1" /> par {' '}
               <span 
                 className="text-emerald-300 hover:text-emerald-200 underline transition-colors cursor-pointer"
-                onClick={() => window.open('https://devs-trop-doux-recup.vercel.app/', '_blank')}
+                onClick={() => window.open('https://jeedtech.vercel.app/', '_blank')}
               >
-                  Équipe Dev
+                  JEED-TECH
               </span>
             </p>
             <p className="text-sm text-emerald-200/80">
